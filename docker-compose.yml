@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+  auth:
+    build:
+      context: ./auth
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8800:8080"
+    entrypoint:
+      - "./main"
+  user:
+    build:
+      context: ./user
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8801:8080"
+    entrypoint:
+      - "./main"
+  server:
+    build:
+      context: ./server
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8802:8080"
+    entrypoint:
+      - "./main"
+  channel:
+    build:
+      context: ./channel
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8803:8080"
+    entrypoint:
+      - "./main"
+  chat:
+    build:
+      context: ./chat
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8804:8080"
+    entrypoint:
+      - "./main"
