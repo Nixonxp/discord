@@ -29,3 +29,4 @@ COPY --from=build /bin/main /main
 # https://docs.docker.com/reference/dockerfile/#expose
 EXPOSE 8080
 
+ENTRYPOINT ["/main"]

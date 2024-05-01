@@ -16,7 +16,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.GET("/", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, "Auth service response")
+		return c.HTML(http.StatusOK, "Auth service response v1")
 	})
 
 	e.GET("/health", func(c echo.Context) error {
