@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-1.1
+  name: auth-blue
   namespace: discord-app
   labels:
     app: auth
@@ -10,6 +10,7 @@ spec:
   selector:
     matchLabels:
       app: auth
+      version: "1.1"
   template:
     metadata:
       labels:

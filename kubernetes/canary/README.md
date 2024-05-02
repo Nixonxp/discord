@@ -1,4 +1,4 @@
-# Стратегия деплоя blue-green в kubernetes для сервиса auth
+# Стратегия деплоя canary в kubernetes для сервиса auth
 
 ## Deployment
 1. `minikube image load discord-app-auth:v1` - добавляем образ auth версии 1 в minikube
