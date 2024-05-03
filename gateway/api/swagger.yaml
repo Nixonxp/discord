@@ -1,0 +1,211 @@
+basePath: /api/
+definitions:
+  CallbackOAuthUserRequest:
+    properties:
+      code:
+        example: 9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq
+        type: string
+    required:
+    - code
+    type: object
+  ErrorMessage:
+    properties:
+      message:
+        type: string
+    type: object
+  LoginOAthUserResponse:
+    properties:
+      code:
+        example: 9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq
+        type: string
+    type: object
+  LoginUserRequest:
+    properties:
+      login:
+        example: user_login
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  LoginUserResponse:
+    properties:
+      login:
+        example: user_login
+        type: string
+      name:
+        example: user123
+        type: string
+      token:
+        example: 9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq
+        type: string
+      userId:
+        example: 1
+        type: integer
+    type: object
+  RegisterUserRequest:
+    properties:
+      email:
+        example: user123@mail.ru
+        type: string
+      login:
+        example: user_login
+        type: string
+      name:
+        example: user123
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - name
+    - email
+    - password
+    type: object
+  RegisterUserResponse:
+    properties:
+      email:
+        example: user123@mail.ru
+        type: string
+      id:
+        example: 1
+        type: integer
+      login:
+        example: user_login
+        type: string
+      name:
+        example: user123
+        type: string
+    type: object
+host: localhost:8800
+info:
+  title: Auth service
+  version: 0.0.1
+paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      operationId: authUser
+      parameters:
+      - description: запрос на аутентификацию пользователя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully authenticated
+          schema:
+            $ref: '#/definitions/LoginUserResponse'
+        "400":
+          description: |-
+            Bad request
+            Invalid username or password
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+      summary: Аутентификация пользователя
+      tags:
+      - auth
+  /v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      operationId: registerUser
+      parameters:
+      - description: запрос на создание пользователя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/RegisterUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully created
+          schema:
+            $ref: '#/definitions/RegisterUserResponse'
+        "400":
+          description: Register validate error
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /v1/oauth/callback:
+    post:
+      consumes:
+      - application/json
+      operationId: oauthUserCallback
+      parameters:
+      - description: запрос на аутентификацию пользователя
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CallbackOAuthUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully authenticated
+          schema:
+            $ref: '#/definitions/LoginUserResponse'
+        "400":
+          description: |-
+            Bad request
+            Invalid code
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+      summary: Аутентификация пользователя через код oauth
+      tags:
+      - auth
+  /v1/oauth/login:
+    post:
+      consumes:
+      - application/json
+      operationId: oauthUserLogin
+      parameters: []
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully authenticated
+          schema:
+            $ref: '#/definitions/LoginOAthUserResponse'
+        "400":
+          description: |-
+            Bad request
+            Invalid username or password
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/ErrorMessage'
+      summary: Получение кода пользователя от oauth сервера
+      tags:
+      - auth
+schemes:
+- http
+swagger: "2.0"
+tags:
+- name: auth

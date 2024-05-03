@@ -1,0 +1,486 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.1",
+    "title": "User service"
+  },
+  "host": "localhost:8802",
+  "basePath": "/api/",
+  "tags": [
+    {
+      "name": "user"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/v1/users/{id}": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Обновление пользователя",
+        "operationId": "updateUser",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на обновление пользователя",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully updated",
+            "schema": {
+              "$ref": "#/definitions/UpdateUserResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/search/login/{login}": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "Поиск пользователя по логину",
+        "operationId": "getUserByLogin",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "login",
+            "description": "логин пользователя",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully founded",
+            "schema": {
+              "$ref": "#/definitions/GetUserResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/friends": {
+      "get": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "Получить список друзей",
+        "operationId": "getFriends",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "Get all friends successful",
+            "schema": {
+              "$ref": "#/definitions/FriendsResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/friends/{user_id}": {
+      "post": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "Добавление пользователя в друзья",
+        "operationId": "addUserToFriend",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully added to friend",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "User id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "Удалить из друзей",
+        "operationId": "removeUserFromFriend",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully removed from friend",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "User id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/friends/invite/accept/{invite_id}": {
+      "post": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "Принять пользователя в друзья",
+        "operationId": "acceptUserToFriend",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "description": "id приглашения",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully accepted to friend",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Invite id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/friends/invite/decline/{invite_id}": {
+      "post": {
+        "tags": [
+          "friends"
+        ],
+        "summary": "Отклонить заявку пользователя в друзья",
+        "operationId": "declineUserToFriend",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "description": "id приглашения",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully declined to friend",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Invite id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        },
+        "avatar_photo_url": {
+          "type": "string"
+        }
+      }
+    },
+    "UpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        },
+        "password": {
+          "type": "string"
+        },
+        "avatar_photo_url": {
+          "type": "string"
+        }
+      }
+    },
+    "UpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        },
+        "avatar_photo_url": {
+          "type": "string"
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "FriendsResponse": {
+      "type": "array",
+      "items": {
+        "$ref" : "#/definitions/Friend"
+      }
+    },
+    "Friend": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "integer",
+          "example": 1
+        },
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        }
+      }
+    }
+  }
+}

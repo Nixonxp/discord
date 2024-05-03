@@ -1,0 +1,178 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.1",
+    "title": "Chat service"
+  },
+  "host": "localhost:8805",
+  "basePath": "/api/",
+  "tags": [
+    {
+      "name": "chat"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/v1/chat/private/{user_id}": {
+      "put": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Отправить сообщение пользователю",
+        "operationId": "sendUserPrivateMessage",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на отправку сообщения пользователю",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendPrivateMessageRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User message sent successfully",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Send message validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "chat"
+        ],
+        "summary": "Получить сообщения приватного чата с пользователем",
+        "operationId": "getUserPrivateMessages",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User messages get successfully",
+            "schema": {
+              "$ref": "#/definitions/PrivateMessagesResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "SendPrivateMessageRequest": {
+      "required": ["text"],
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "message text"
+        }
+      }
+    },
+    "PrivateMessagesResponse": {
+      "type": "array",
+      "items": {
+        "$ref" : "#/definitions/Message"
+      }
+    },
+    "Message": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "text": {
+          "type": "string",
+          "example": "message text"
+        },
+        "timestamp": {
+          "type": "integer",
+          "example": 1714735164
+        }
+      }
+    }
+  }
+}

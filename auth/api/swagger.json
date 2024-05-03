@@ -1,0 +1,299 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.1",
+    "title": "Auth service"
+  },
+  "host": "localhost:8801",
+  "basePath": "/api/",
+  "tags": [
+    {
+      "name": "auth"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/v1/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Регистрация пользователя",
+        "operationId": "registerUser",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на создание пользователя",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully created",
+            "schema": {
+              "$ref": "#/definitions/RegisterUserResponse"
+            }
+          },
+          "400": {
+            "description": "Register validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Аутентификация пользователя",
+        "operationId": "authUser",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на аутентификацию пользователя",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/LoginUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request\nInvalid username or password",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/oauth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Получение кода пользователя от oauth сервера",
+        "operationId": "oauthUserLogin",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/LoginOAthUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request\nInvalid username or password",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/oauth/callback": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Аутентификация пользователя через код oauth",
+        "operationId": "oauthUserCallback",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на аутентификацию пользователя",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CallbackOAuthUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/LoginUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request\nInvalid code",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterUserRequest": {
+      "required": ["login", "name", "email", "password"],
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        }
+      }
+    },
+    "LoginUserRequest": {
+      "required": ["login", "password"],
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginUserResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "integer",
+          "example": 1
+        },
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "token": {
+          "type": "string",
+          "example": "9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq"
+        }
+      }
+    },
+    "LoginOAthUserResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq"
+        }
+      }
+    },
+    "CallbackOAuthUserRequest": {
+      "required": ["code"],
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "9HqLlyZOugoStsXCUfD_0YdwnNnunAJF8V47U3QHXSq"
+        }
+      }
+    }
+  }
+}

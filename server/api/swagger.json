@@ -1,0 +1,549 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.1",
+    "title": "Server service"
+  },
+  "host": "localhost:8803",
+  "basePath": "/api/",
+  "tags": [
+    {
+      "name": "server"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/v1/servers/create": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Добавить сервер",
+        "operationId": "addServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на создание сервера",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateServerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server successfully created",
+            "schema": {
+              "$ref": "#/definitions/CreateServerResponse"
+            }
+          },
+          "400": {
+            "description": "Server create validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/search": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Поиск сервера",
+        "operationId": "searchServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на поиск сервера",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SearchServerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server successfully founded",
+            "schema": {
+              "$ref": "#/definitions/SearchServerResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Server search validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/subscribe/{server_id}": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Подписаться на сервер",
+        "operationId": "subscribeServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "server_id",
+            "description": "id сервера",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server successfully subscribed",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Server subscribe validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/unsubscribe/{server_id}": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Отписаться от сервера",
+        "operationId": "unsubscribeServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "server_id",
+            "description": "id сервера",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server successfully unsubscribed",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Server unsubscribe validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/search/user/{user_id}": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Поиск сервера по пользователю",
+        "operationId": "searchServerByUserId",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server successfully founded",
+            "schema": {
+              "$ref": "#/definitions/SearchServerResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "Server search validate error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/{server_id}/invite/{user_id}": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Пригласить пользователя на сервер",
+        "operationId": "inviteUserToServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "server_id",
+            "description": "id сервера",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "description": "id пользователя",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invite successfully sent",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Invite sent error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/{server_id}/messages/send": {
+      "post": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Опубликовать сообщение на сервере",
+        "operationId": "publicationMessageOnServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "server_id",
+            "description": "id сервера",
+            "required": true,
+            "type": "integer"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "запрос на публикацию сообщения сервера",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SendMessageServerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message successfully sent",
+            "schema": {
+              "$ref": "#/definitions/SuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Message sent error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    },
+    "/v1/servers/{server_id}/messages": {
+      "get": {
+        "tags": [
+          "server"
+        ],
+        "summary": "Получить опубликованные сообщения сервера",
+        "operationId": "getMessagesFromServer",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "server_id",
+            "description": "id сервера",
+            "required": true,
+            "type": "integer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages successfully get",
+            "schema": {
+              "$ref": "#/definitions/ServerMessagesResponse"
+            }
+          },
+          "400": {
+            "description": "Message get error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/ErrorMessage"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "CreateServerRequest": {
+      "required": ["name"],
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "server name"
+        }
+      }
+    },
+    "CreateServerResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "name": {
+          "type": "string",
+          "example": "server name"
+        }
+      }
+    },
+    "SearchServerRequest": {
+      "type": "object",
+      "$ref": "#/definitions/Server"
+    },
+    "SearchServerResponse": {
+      "type": "array",
+      "items": {
+        "$ref" : "#/definitions/Server"
+      }
+    },
+    "Server": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "name": {
+          "type": "string",
+          "example": "server name"
+        }
+      }
+    },
+    "SendMessageServerRequest": {
+      "required": ["text"],
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "message text"
+        }
+      }
+    },
+    "ServerMessagesResponse": {
+      "type": "array",
+      "items": {
+        "$ref" : "#/definitions/Message"
+      }
+    },
+    "Message": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "example": 1
+        },
+        "text": {
+          "type": "string",
+          "example": "message text"
+        },
+        "timestamp": {
+          "type": "integer",
+          "example": 1714735164
+        }
+      }
+    }
+  }
+}

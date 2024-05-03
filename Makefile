@@ -16,3 +16,6 @@ down: ## остановка приложения
 restart: ## перезапуск приложения
 	@docker compose down
 	@docker compose up -d
+
+.PHONY: rebuild-app ## пересборка и перезапуск приложения
+rebuild-app: build restart

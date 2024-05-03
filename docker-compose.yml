@@ -1,33 +1,39 @@
 version: "3.7"
 
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: ./build/Dockerfile
+    ports:
+      - "8800:8080"
   auth:
     build:
       context: ./auth
       dockerfile: ./build/Dockerfile
     ports:
-      - "8800:8080"
+      - "8801:8080"
   user:
     build:
       context: ./user
       dockerfile: ./build/Dockerfile
     ports:
-      - "8801:8080"
+      - "8802:8080"
   server:
     build:
       context: ./server
       dockerfile: ./build/Dockerfile
     ports:
-      - "8802:8080"
+      - "8803:8080"
   channel:
     build:
       context: ./channel
       dockerfile: ./build/Dockerfile
     ports:
-      - "8803:8080"
+      - "8804:8080"
   chat:
     build:
       context: ./chat
       dockerfile: ./build/Dockerfile
     ports:
-      - "8804:8080"
+      - "8805:8080"
