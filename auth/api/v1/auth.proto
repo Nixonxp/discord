@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.auth.api.v1;
+option go_package = "github.com/Nixonxp/discord/auth/pkg/api/v1;auth";
+
+// AuthService - auth service
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc OauthLogin(OauthLoginRequest) returns (OauthLoginResponse) {}
+  rpc OauthLoginCallback(OauthLoginCallbackRequest) returns (OauthLoginCallbackResponse) {}
+}
+
+message RegisterRequest {
+  User body = 1;
+}
+
+message RegisterResponse {
+  uint64 id = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+}
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  uint64 userId = 1;
+  string login = 2;
+  string name = 3;
+  string token = 4;
+}
+
+message User {
+  string login = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+}
+
+message OauthLoginRequest {
+}
+
+message OauthLoginResponse {
+  string code = 1;
+}
+
+message OauthLoginCallbackRequest {
+  string code = 1;
+}
+
+message OauthLoginCallbackResponse {
+  uint64 userId = 1 [json_name = "userId"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string token = 4 [json_name = "email"];
+}
+
+message ErrorMessage {
+  string message = 1;
+}

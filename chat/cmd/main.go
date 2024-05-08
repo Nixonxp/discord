@@ -1,93 +1,193 @@
 package main
 
 import (
-	"chat/internal/models"
-	"encoding/json"
-	"github.com/go-openapi/strfmt"
+	"buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	"context"
+	"errors"
+	"fmt"
+	pb "github.com/Nixonxp/discord/chat/pkg/api/v1"
+	"github.com/bufbuild/protovalidate-go"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"log"
 	"math/rand/v2"
+	"net"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func httpErrorMsg(err error) *models.ErrorMessage {
+type server struct {
+	pb.UnimplementedChatServiceServer
+	validator *protovalidate.Validator
+}
+
+func NewServer() (*server, error) {
+	srv := &server{}
+
+	validator, err := protovalidate.New(
+		protovalidate.WithDisableLazy(true),
+		protovalidate.WithMessages(
+			&pb.SendUserPrivateMessageRequest{},
+			&pb.GetUserPrivateMessagesRequest{},
+		),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize validator: %w", err)
+	}
+
+	srv.validator = validator
+	return srv, nil
+}
+
+func rpcValidationError(err error) error {
 	if err == nil {
 		return nil
 	}
-	return &models.ErrorMessage{
-		Message: err.Error(),
+
+	var valErr *protovalidate.ValidationError
+	if ok := errors.As(err, &valErr); ok {
+		st, err := status.New(codes.InvalidArgument, codes.InvalidArgument.String()).
+			WithDetails(convertProtovalidateValidationErrorToErrdetailsBadRequest(valErr))
+		if err == nil {
+			return st.Err()
+		}
+	}
+
+	return status.Error(codes.Internal, err.Error())
+}
+
+func convertProtovalidateValidationErrorToErrdetailsBadRequest(valErr *protovalidate.ValidationError) *errdetails.BadRequest {
+	return &errdetails.BadRequest{
+		FieldViolations: protovalidateVialationsToGoogleViolations(valErr.Violations),
 	}
 }
 
-func sendUserPrivateMessage(c echo.Context) error {
-	var request models.SendPrivateMessageRequest
-	if err := json.NewDecoder(c.Request().Body).Decode(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, httpErrorMsg(err))
+func protovalidateVialationsToGoogleViolations(vs []*validate.Violation) []*errdetails.BadRequest_FieldViolation {
+	res := make([]*errdetails.BadRequest_FieldViolation, len(vs))
+	for i, v := range vs {
+		res[i] = &errdetails.BadRequest_FieldViolation{
+			Field:       v.FieldPath,
+			Description: v.Message,
+		}
+	}
+	return res
+}
+
+func (s *server) SendUserPrivateMessage(_ context.Context, req *pb.SendUserPrivateMessageRequest) (*pb.ActionResponse, error) {
+	log.Printf("Send private message: received: %s", req.GetUserId())
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, rpcValidationError(err)
 	}
 
-	if err := request.Validate(strfmt.Default); err != nil {
-		return c.JSON(http.StatusBadRequest, httpErrorMsg(err))
-	}
-
-	response := models.SuccessResponse{
+	return &pb.ActionResponse{
 		Success: true,
-	}
-	return c.JSON(http.StatusOK, response)
+	}, nil
 }
 
-func getUserPrivateMessages(c echo.Context) error {
-	response := models.PrivateMessagesResponse{
-		&models.Message{
-			ID:        1,
-			Text:      "text message",
-			Timestamp: time.Now().Unix(),
-		},
+func (s *server) GetUserPrivateMessages(_ context.Context, req *pb.GetUserPrivateMessagesRequest) (*pb.GetMessagesResponse, error) {
+	log.Printf("Send private message: received: %d", req.GetUserId())
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, rpcValidationError(err)
 	}
-	return c.JSON(http.StatusOK, response)
+
+	return &pb.GetMessagesResponse{
+		Messages: []*pb.Message{
+			{
+				Id:   1,
+				Text: "text mesage",
+				Timestamp: &timestamppb.Timestamp{
+					Seconds: time.Now().Unix(),
+				},
+			},
+		},
+	}, nil
 }
 
 func main() {
-	e := echo.New()
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
-	e.PUT("/api/v1/chat/private/:user_id", sendUserPrivateMessage)
-	e.GET("/api/v1/chat/private/:user_id", getUserPrivateMessages)
-
-	e.GET("/health", func(c echo.Context) error {
-		status := http.StatusOK
-		statusMessage := "OK"
-
-		if !isServiceOk(10) {
-			status = http.StatusInternalServerError
-			statusMessage = "Error"
-		}
-
-		return c.JSON(status, struct{ Status string }{Status: statusMessage})
-	})
-
-	e.GET("/ready", func(c echo.Context) error {
-		status := http.StatusOK
-		statusMessage := "OK"
-
-		if !isServiceOk(5) {
-			status = http.StatusInternalServerError
-			statusMessage = "Error"
-		}
-
-		return c.JSON(status, struct{ Status string }{Status: statusMessage})
-	})
-
-	httpPort := os.Getenv("PORT")
-	if httpPort == "" {
-		httpPort = "8080"
+	server, err := NewServer()
+	if err != nil {
+		log.Fatalf("failed to create server: %v", err)
 	}
 
-	e.Logger.Fatal(e.Start(":" + httpPort))
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		grpcServer := grpc.NewServer()
+		pb.RegisterChatServiceServer(grpcServer, server)
+
+		reflection.Register(grpcServer)
+
+		lis, err := net.Listen("tcp", ":8805")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		log.Printf("server listening at %v", lis.Addr())
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		e := echo.New()
+
+		e.Use(middleware.Logger())
+		e.Use(middleware.Recover())
+
+		e.GET("/health", func(c echo.Context) error {
+			status := http.StatusOK
+			statusMessage := "OK"
+
+			if !isServiceOk(10) {
+				status = http.StatusInternalServerError
+				statusMessage = "Error"
+			}
+
+			return c.JSON(status, struct{ Status string }{Status: statusMessage})
+		})
+
+		e.GET("/ready", func(c echo.Context) error {
+			status := http.StatusOK
+			statusMessage := "OK"
+
+			if !isServiceOk(5) {
+				status = http.StatusInternalServerError
+				statusMessage = "Error"
+			}
+
+			return c.JSON(status, struct{ Status string }{Status: statusMessage})
+		})
+
+		httpPort := os.Getenv("PORT")
+		if httpPort == "" {
+			httpPort = "8085"
+		}
+
+		e.Logger.Fatal(e.Start(":" + httpPort))
+	}()
+
+	wg.Wait()
 }
 
 // isServiceOk в зависимости от входящего значения вернет false, например

@@ -1,0 +1,1589 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Discord app",
+    "version": "0.0.2"
+  },
+  "tags": [
+    {
+      "name": "GatewayService"
+    }
+  ],
+  "host": "localhost:8800",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Аутентификация пользователя",
+        "operationId": "GatewayService_Login",
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/v1LoginResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request Invalid username or password",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Регистрация пользователя",
+        "operationId": "GatewayService_Register",
+        "responses": {
+          "200": {
+            "description": "User successfully created",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterResponse"
+            }
+          },
+          "400": {
+            "description": "Register validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/channel/create": {
+      "post": {
+        "summary": "Добавить канал",
+        "operationId": "GatewayService_AddChannel",
+        "responses": {
+          "200": {
+            "description": "Channel successfully created",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Channel create validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "channels"
+        ]
+      }
+    },
+    "/api/v1/channel/{channel_id}": {
+      "delete": {
+        "summary": "Удалить канал",
+        "operationId": "GatewayService_DeleteChannel",
+        "responses": {
+          "200": {
+            "description": "Channel successfully deleted",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Channel delete validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "channels"
+        ]
+      }
+    },
+    "/api/v1/channel/{channel_id}/join": {
+      "post": {
+        "summary": "Присоединиться к каналу",
+        "operationId": "GatewayService_JoinChannel",
+        "responses": {
+          "200": {
+            "description": "Channel successfully joined",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Join to channel validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "channels"
+        ]
+      }
+    },
+    "/api/v1/channel/{channel_id}/leave": {
+      "post": {
+        "summary": "Покинуть канал",
+        "operationId": "GatewayService_LeaveChannel",
+        "responses": {
+          "200": {
+            "description": "Channel successfully leaved",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Leave channel validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "channels"
+        ]
+      }
+    },
+    "/api/v1/chat/private/{user_id}": {
+      "get": {
+        "summary": "Получить сообщения с пользователем",
+        "operationId": "GatewayService_GetUserPrivateMessages",
+        "responses": {
+          "200": {
+            "description": "User message get successfully",
+            "schema": {
+              "$ref": "#/definitions/v1GetMessagesResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      },
+      "post": {
+        "summary": "Отправить сообщение пользователю",
+        "operationId": "GatewayService_SendUserPrivateMessage",
+        "responses": {
+          "200": {
+            "description": "User message sent successfully",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Send message validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GatewayServiceSendUserPrivateMessageBody"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
+    "/api/v1/friends": {
+      "get": {
+        "summary": "Получить список друзей пользователя",
+        "operationId": "GatewayService_GetUserFriends",
+        "responses": {
+          "200": {
+            "description": "Get all friends successful",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserFriendsResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/friends/add/{user_id}": {
+      "post": {
+        "summary": "Добавление пользователя в друзья",
+        "operationId": "GatewayService_AddToFriendByUserId",
+        "responses": {
+          "200": {
+            "description": "User successfully added to friend",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "User id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/friends/invite/accept/{invite_id}": {
+      "post": {
+        "summary": "Принять пользователя в друзья",
+        "operationId": "GatewayService_AcceptFriendInvite",
+        "responses": {
+          "200": {
+            "description": "User successfully accepted to friend",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Invite id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invite_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/friends/invite/decline/{invite_id}": {
+      "post": {
+        "summary": "Отклонить заявку  пользователя в друзья",
+        "operationId": "GatewayService_DeclineFriendInvite",
+        "responses": {
+          "200": {
+            "description": "User successfully declined to friend",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Invite id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "invite_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/oauth/callback": {
+      "post": {
+        "summary": "Аутентификация пользователя через код oauth",
+        "operationId": "GatewayService_OauthLoginCallback",
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/v1OauthLoginCallbackResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request Invalid code",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OauthLoginCallbackRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/oauth/login": {
+      "post": {
+        "summary": "Аутентификация пользователя через OAuth",
+        "operationId": "GatewayService_OauthLogin",
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/v1OauthLoginResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request Invalid username or password",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OauthLoginRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/servers/create": {
+      "post": {
+        "summary": "Добавить сервер",
+        "operationId": "GatewayService_CreateServer",
+        "responses": {
+          "200": {
+            "description": "Server successfully created",
+            "schema": {
+              "$ref": "#/definitions/v1CreateServerResponse"
+            }
+          },
+          "400": {
+            "description": "Server create validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/search": {
+      "post": {
+        "summary": "Поиск сервера",
+        "operationId": "GatewayService_SearchServer",
+        "responses": {
+          "200": {
+            "description": "Server successfully founded",
+            "schema": {
+              "$ref": "#/definitions/v1SearchServerResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "400": {
+            "description": "Server search validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SearchServerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/search/user/{user_id}": {
+      "post": {
+        "summary": "Поиск сервера по пользователю",
+        "operationId": "GatewayService_SearchServerByUserId",
+        "responses": {
+          "200": {
+            "description": "Server successfully founded",
+            "schema": {
+              "$ref": "#/definitions/v1SearchServerByUserIdResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "400": {
+            "description": "Server search validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/subscribe/{server_id}": {
+      "post": {
+        "summary": "Подписаться на сервер",
+        "operationId": "GatewayService_SubscribeServer",
+        "responses": {
+          "200": {
+            "description": "Server successfully subscribed",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Server subscribe validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/unsubscribe/{server_id}": {
+      "post": {
+        "summary": "Отписаться от сервера",
+        "operationId": "GatewayService_UnsubscribeServer",
+        "responses": {
+          "200": {
+            "description": "Server successfully unsubscribed",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Server unsubscribe validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{server_id}/invite/{user_id}": {
+      "post": {
+        "summary": "Пригласить пользователя на сервер",
+        "operationId": "GatewayService_InviteUserToServer",
+        "responses": {
+          "200": {
+            "description": "Invite successfully sent",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Invite sent error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{server_id}/messages": {
+      "get": {
+        "summary": "Получить опубликованные сообщения сервера",
+        "operationId": "GatewayService_GetMessagesFromServer",
+        "responses": {
+          "200": {
+            "description": "Messages successfully get",
+            "schema": {
+              "$ref": "#/definitions/v1GetMessagesResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "400": {
+            "description": "Messages get error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/servers/{server_id}/messages/send": {
+      "post": {
+        "summary": "Пригласить пользователя на сервер",
+        "operationId": "GatewayService_PublishMessageOnServer",
+        "responses": {
+          "200": {
+            "description": "Message successfully sent",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Message sent error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "server_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GatewayServicePublishMessageOnServerBody"
+            }
+          }
+        ],
+        "tags": [
+          "servers"
+        ]
+      }
+    },
+    "/api/v1/users/search/login/{login}": {
+      "get": {
+        "summary": "Поиск пользователя по логину",
+        "operationId": "GatewayService_GetUserByLogin",
+        "responses": {
+          "200": {
+            "description": "User successfully founded",
+            "schema": {
+              "$ref": "#/definitions/v1UserDataResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "login",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    },
+    "/api/v1/users/{id}": {
+      "post": {
+        "summary": "Обновление пользователя",
+        "operationId": "GatewayService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/v1UserDataResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request Invalid code",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserBody"
+            }
+          }
+        ],
+        "tags": [
+          "user"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "GatewayServicePublishMessageOnServerBody": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "message text"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "GatewayServiceSendUserPrivateMessageBody": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "message text"
+        }
+      },
+      "required": [
+        "text"
+      ]
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ActionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1CreateServerResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ErrorMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Friend": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GetMessagesResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Message"
+          }
+        }
+      }
+    },
+    "v1GetUserFriendsResponse": {
+      "type": "object",
+      "properties": {
+        "friends": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Friend"
+          }
+        }
+      }
+    },
+    "v1LoginRequest": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      },
+      "title": "LoginRequest",
+      "required": [
+        "login",
+        "password"
+      ]
+    },
+    "v1LoginResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Message": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "text": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1OauthLoginCallbackRequest": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "{code}"
+        }
+      },
+      "required": [
+        "code"
+      ]
+    },
+    "v1OauthLoginCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OauthLoginRequest": {
+      "type": "object"
+    },
+    "v1OauthLoginResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RegisterRequest": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user123"
+        },
+        "email": {
+          "type": "string",
+          "example": "user123@mail.ru"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        }
+      },
+      "title": "RegisterRequest",
+      "required": [
+        "login",
+        "name",
+        "email",
+        "password"
+      ]
+    },
+    "v1RegisterResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SearchServerByUserIdResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SearchServerRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "example": 1
+        },
+        "name": {
+          "type": "string",
+          "example": "server name"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "v1SearchServerResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateUserBody": {
+      "type": "object",
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "user_login"
+        },
+        "name": {
+          "type": "string",
+          "example": "user name"
+        },
+        "email": {
+          "type": "string",
+          "example": "test@mail.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "password123"
+        },
+        "avatar_photo_url": {
+          "type": "string",
+          "example": "url"
+        }
+      },
+      "required": [
+        "login",
+        "name",
+        "email",
+        "password",
+        "avatar_photo_url"
+      ]
+    },
+    "v1UserDataResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "login": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar_photo_url": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

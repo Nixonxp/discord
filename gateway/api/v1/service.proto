@@ -1,0 +1,1112 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.gateway.api.v1;
+
+import "api/v1/messages.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/Nixonxp/discord/gateway/pkg/api/gateway/v1;gateway";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Discord app";
+    version: "0.0.2";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+  host: "localhost:8800";
+  swagger:"2.0"
+};
+
+// AuthService - auth service
+service GatewayService {
+  // Регистрация пользователя
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/register"
+      body: "*",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "auth";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully created"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.RegisterResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Register validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Аутентификация пользователя
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/auth/login"
+      body: "*",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "auth";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully authenticated"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.LoginResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Bad request Invalid username or password";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Аутентификация пользователя через OAuth
+  rpc OauthLogin(OauthLoginRequest) returns (OauthLoginResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/oauth/login"
+      body: "*",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "auth";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully authenticated"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.OauthLoginResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Bad request Invalid username or password";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Аутентификация пользователя через код oauth
+  rpc OauthLoginCallback(OauthLoginCallbackRequest) returns (OauthLoginCallbackResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/oauth/callback"
+      body: "*",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "auth";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully authenticated"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.OauthLoginCallbackResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Bad request Invalid code";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Обновление пользователя
+  rpc UpdateUser(UpdateUserRequest) returns (UserDataResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/users/{id}"
+      body: "body",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "user";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully authenticated"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.UserDataResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Bad request Invalid code";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Поиск пользователя по логину
+  rpc GetUserByLogin(GetUserByLoginRequest) returns (UserDataResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/users/search/login/{login}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "user";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully founded"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.UserDataResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204";
+        value: {
+          description: "No content";
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Получить список друзей пользователя
+  rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/friends"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "Get all friends successful"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.GetUserFriendsResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204";
+        value: {
+          description: "No content";
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Добавление пользователя в друзья
+  rpc AddToFriendByUserId(AddToFriendByUserIdRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/friends/add/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully added to friend"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "User id is incorrect";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Принять пользователя в друзья
+  rpc AcceptFriendInvite(AcceptFriendInviteRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/friends/invite/accept/{invite_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully accepted to friend"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Invite id is incorrect";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Отклонить заявку  пользователя в друзья
+  rpc DeclineFriendInvite(DeclineFriendInviteRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/friends/invite/decline/{invite_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully declined to friend"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Invite id is incorrect";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Добавить сервер
+  rpc CreateServer(CreateServerRequest) returns (CreateServerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/create"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Server successfully created"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.CreateServerResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Server create validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Поиск сервера
+  rpc SearchServer(SearchServerRequest) returns (SearchServerResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/search"
+      body: "*",
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Server successfully founded"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.SearchServerResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204";
+        value: {
+          description: "No content";
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Server search validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Подписаться на сервер
+  rpc SubscribeServer(SubscribeServerRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/subscribe/{server_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Server successfully subscribed"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Server subscribe validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Отписаться от сервера
+  rpc UnsubscribeServer(UnsubscribeServerRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/unsubscribe/{server_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Server successfully unsubscribed"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Server unsubscribe validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Поиск сервера по пользователю
+  rpc SearchServerByUserId(SearchServerByUserIdRequest) returns (SearchServerByUserIdResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/search/user/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Server successfully founded"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.SearchServerByUserIdResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204"
+        value: {
+          description: "No content"
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Server search validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Пригласить пользователя на сервер
+  rpc InviteUserToServer(InviteUserToServerRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/{server_id}/invite/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Invite successfully sent"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Invite sent error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Пригласить пользователя на сервер
+  rpc PublishMessageOnServer(PublishMessageOnServerRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/servers/{server_id}/messages/send"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Message successfully sent"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Message sent error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Получить опубликованные сообщения сервера
+  rpc GetMessagesFromServer(GetMessagesFromServerRequest) returns (GetMessagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/servers/{server_id}/messages"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "servers";
+      responses: {
+        key: "200"
+        value: {
+          description: "Messages successfully get"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.GetMessagesResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204"
+        value: {
+          description: "No content"
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Messages get error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Добавить канал
+  rpc AddChannel(AddChannelRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/channel/create"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "channels";
+      responses: {
+        key: "200"
+        value: {
+          description: "Channel successfully created"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Channel create validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Удалить канал
+  rpc DeleteChannel(DeleteChannelRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/channel/{channel_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "channels";
+      responses: {
+        key: "200"
+        value: {
+          description: "Channel successfully deleted"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Channel delete validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Присоединиться к каналу
+  rpc JoinChannel(JoinChannelRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/channel/{channel_id}/join"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "channels";
+      responses: {
+        key: "200"
+        value: {
+          description: "Channel successfully joined"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Join to channel validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Покинуть канал
+  rpc LeaveChannel(LeaveChannelRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/channel/{channel_id}/leave"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "channels";
+      responses: {
+        key: "200"
+        value: {
+          description: "Channel successfully leaved"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Leave channel validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Отправить сообщение пользователю
+  rpc SendUserPrivateMessage(SendUserPrivateMessageRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/chat/private/{user_id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "chat";
+      responses: {
+        key: "200"
+        value: {
+          description: "User message sent successfully"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Send message validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Получить сообщения с пользователем
+  rpc GetUserPrivateMessages(GetUserPrivateMessagesRequest) returns (GetMessagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/chat/private/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "chat";
+      responses: {
+        key: "200"
+        value: {
+          description: "User message get successfully"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.GetMessagesResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204"
+        value: {
+          description: "No content"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+}
+

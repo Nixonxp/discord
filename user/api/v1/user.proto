@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.user.api.v1;
+option go_package = "github.com/Nixonxp/discord/user/pkg/api/v1;user";
+
+service UserService {
+  rpc UpdateUser(UpdateUserRequest) returns (UserDataResponse) {}
+  rpc GetUserByLogin(GetUserByLoginRequest) returns (UserDataResponse) {}
+  rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse) {}
+  rpc AddToFriendByUserId(AddToFriendByUserIdRequest) returns (ActionResponse) {}
+  rpc AcceptFriendInvite(AcceptFriendInviteRequest) returns (ActionResponse) {}
+  rpc DeclineFriendInvite(DeclineFriendInviteRequest) returns (ActionResponse) {}
+}
+
+message UpdateUserRequest {
+  uint64 id = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+  string password = 5;
+  string avatar_photo_url = 6;
+}
+
+message UserDataResponse {
+  uint64 id = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+  string avatar_photo_url = 6;
+}
+
+message GetUserByLoginRequest {
+  string login = 1;
+}
+
+message ErrorMessage {
+  string message = 1;
+}
+
+message GetUserFriendsRequest {
+}
+
+message GetUserFriendsResponse {
+  repeated Friend friends = 1;
+}
+
+message Friend {
+  uint64 userId = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+}
+
+message AddToFriendByUserIdRequest {
+  uint64 user_id = 1;
+}
+
+message AcceptFriendInviteRequest {
+  uint64 invite_id = 1;
+}
+
+message DeclineFriendInviteRequest {
+  uint64 invite_id = 1;
+}
+
+message ActionResponse {
+  bool success = 1;
+}

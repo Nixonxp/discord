@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.chat.api.v1;
+import "google/protobuf/timestamp.proto";
+option go_package = "github.com/Nixonxp/discord/chat/pkg/api/v1;chat";
+
+service ChatService {
+  rpc SendUserPrivateMessage(SendUserPrivateMessageRequest) returns (ActionResponse) {}
+  rpc GetUserPrivateMessages(GetUserPrivateMessagesRequest) returns (GetMessagesResponse)  {}
+}
+
+message SendUserPrivateMessageRequest {
+  uint64 user_id = 1;
+  string text = 2;
+}
+
+message ErrorMessage {
+  string message = 1;
+}
+
+message ActionResponse {
+  bool success = 1;
+}
+
+message GetUserPrivateMessagesRequest {
+  uint64 user_id = 1;
+}
+
+message GetMessagesResponse {
+  repeated Message messages = 1;
+}
+
+message Message {
+  uint64 id = 1;
+  string text = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}

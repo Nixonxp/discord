@@ -1,0 +1,283 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.gateway.api.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/field_behavior.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Nixonxp/discord/gateway/pkg/api/gateway/v1;gateway";
+
+message RegisterRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      title: "RegisterRequest"
+      required: ["login", "name", "email", "password"]
+    }
+  };
+
+  string login = 1 [json_name = "login", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user_login\""
+  }];
+  string name = 2 [json_name = "name", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 2, (google.api.field_behavior)  = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user123\""
+  }];
+  string email = 3 [json_name = "email", (buf.validate.field).required = true, (buf.validate.field).string.email=true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user123@mail.ru\""
+  }];
+  string password = 4 [json_name = "password", (buf.validate.field).required = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"password123\""
+  }];
+}
+
+message RegisterResponse {
+  uint64 id = 1 [json_name = "id"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string email = 4 [json_name = "email"];
+}
+
+message LoginRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      title: "LoginRequest"
+      required: ["login", "password"]
+    }
+  };
+
+  string login = 1 [json_name = "login", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user_login\""
+  }];
+  string password = 2 [json_name = "password", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 8, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"password123\""
+  }];
+}
+
+message LoginResponse {
+  uint64 userId = 1 [json_name = "userId"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string token = 4 [json_name = "email"];
+}
+
+message OauthLoginRequest {
+}
+
+message OauthLoginResponse {
+  string code = 1 [json_name = "code"];
+}
+
+message OauthLoginCallbackRequest {
+  string code = 1 [json_name = "code", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"{code}\""
+  }];
+}
+
+message OauthLoginCallbackResponse {
+  uint64 userId = 1 [json_name = "userId"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string token = 4 [json_name = "email"];
+}
+
+message UpdateUserRequest {
+  uint64 id = 1 [json_name = "id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+  UpdateUserBody body = 2;
+}
+
+message UpdateUserBody {
+  string login = 1 [json_name = "login", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user_login\""
+  }];
+  string name = 2 [json_name = "name", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 2, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user name\""
+  }];
+  string email = 3 [json_name = "email", (buf.validate.field).required = true, (buf.validate.field).string.email=true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"test@mail.com\""
+  }];
+  string password = 4 [json_name = "password", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 8, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"password123\""
+  }];
+  string avatar_photo_url = 5 [json_name = "avatar_photo_url", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"url\""
+  }];
+}
+
+message UserDataResponse {
+  uint64 id = 1 [json_name = "id"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string email = 4 [json_name = "email"];
+  string avatar_photo_url = 6 [json_name = "avatar_photo_url"];
+}
+
+message GetUserByLoginRequest {
+  string login = 1 [json_name = "login", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"user_login\""
+  }];
+}
+
+message GetUserFriendsRequest {
+}
+
+message GetUserFriendsResponse {
+  repeated Friend friends= 1;
+}
+
+message AddToFriendByUserIdRequest {
+  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message Friend {
+  uint64 userId = 1 [json_name = "user_id"];
+  string login = 2 [json_name = "login"];
+  string name = 3 [json_name = "name"];
+  string email = 4 [json_name = "email"];
+}
+
+message AcceptFriendInviteRequest {
+  uint64 invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message DeclineFriendInviteRequest {
+  uint64 invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message ActionResponse {
+  bool success = 1 [json_name = "success"];
+}
+
+message CreateServerRequest {
+  string name = 1 [json_name = "name", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"server name\""
+  }];
+}
+
+message CreateServerResponse {
+  uint64 id = 1 [json_name = "id"];
+  string name = 2 [json_name = "name"];
+}
+
+message SearchServerRequest {
+  uint64 id = 1 [json_name = "id", (buf.validate.field).required = false, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+  string name = 2 [json_name = "name", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"server name\""
+  }];
+}
+
+message SubscribeServerRequest {
+  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message UnsubscribeServerRequest {
+  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message SearchServerResponse {
+  uint64 id = 1 [json_name = "id"];
+  string name = 2 [json_name = "name"];
+}
+
+message ErrorMessage {
+  string message = 1 [json_name = "message"];
+}
+
+message SearchServerByUserIdRequest {
+  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message SearchServerByUserIdResponse {
+  uint64 id = 1 [json_name = "id"];
+  string name = 2 [json_name = "name"];
+}
+
+message InviteUserToServerRequest {
+  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+
+  uint64 server_id = 2 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message PublishMessageOnServerRequest {
+  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+  string text = 2 [json_name = "text", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"message text\""
+  }];
+}
+
+message GetMessagesFromServerRequest {
+  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message GetMessagesResponse {
+  repeated Message messages = 1;
+}
+
+message Message {
+  uint64 id = 1;
+  string text = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message AddChannelRequest {
+  string name = 1 [json_name = "name", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"channel name\""
+  }];
+}
+
+message DeleteChannelRequest {
+  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message JoinChannelRequest {
+  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message LeaveChannelRequest {
+  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}
+
+message SendUserPrivateMessageRequest {
+  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+  string text = 2 [json_name = "text", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"message text\""
+  }];
+}
+
+message GetUserPrivateMessagesRequest {
+  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "1"
+  }];
+}

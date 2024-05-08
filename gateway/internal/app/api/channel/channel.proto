@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package github.com.Nixonxp.discord.channel.api.v1;
+option go_package = "api/channel";
+
+service ChannelService {
+  rpc AddChannel(AddChannelRequest) returns (ActionResponse) {}
+  rpc DeleteChannel(DeleteChannelRequest) returns (ActionResponse) {}
+  rpc JoinChannel(JoinChannelRequest) returns (ActionResponse){}
+  rpc LeaveChannel(LeaveChannelRequest) returns (ActionResponse) {}
+}
+
+message AddChannelRequest {
+  string name = 1;
+}
+
+message ErrorMessage {
+  string message = 1;
+}
+
+message ActionResponse {
+  bool success = 1;
+}
+
+message DeleteChannelRequest {
+  uint64 channel_id = 1;
+}
+
+message JoinChannelRequest {
+  uint64 channel_id = 1;
+}
+
+message LeaveChannelRequest {
+  uint64 channel_id = 1;
+}

@@ -1,7 +1,8 @@
 *.DS_Store
 .idea
 .vscode
-/bin
+vendor.protobuf
+bin/
 *.out
 .env
 */vendor
