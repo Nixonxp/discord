@@ -24,6 +24,7 @@ FROM scratch AS final
 WORKDIR /
 
 COPY --from=build /bin/main /main
+COPY --from=build /app/swaggerui /swaggerui
 
 # Указываем какой порт необходимо слушать
 # https://docs.docker.com/reference/dockerfile/#expose

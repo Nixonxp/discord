@@ -192,7 +192,7 @@ func main() {
 
 		reflection.Register(grpcServer)
 
-		lis, err := net.Listen("tcp", ":8802")
+		lis, err := net.Listen("tcp", ":8080")
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
@@ -238,7 +238,7 @@ func main() {
 
 		httpPort := os.Getenv("PORT")
 		if httpPort == "" {
-			httpPort = "8082"
+			httpPort = "8081"
 		}
 
 		e.Logger.Fatal(e.Start(":" + httpPort))

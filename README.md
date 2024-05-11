@@ -21,3 +21,6 @@ $ make down
 ```bash
 $ make restart
 ```
+
+### Swagger UI
+1. `http://localhost:8801/swaggerui/#` - список всех методов приложения

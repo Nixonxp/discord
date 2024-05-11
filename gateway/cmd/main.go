@@ -17,11 +17,16 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
 	"net/http"
+	"strings"
+	"sync"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type server struct {
@@ -679,64 +684,107 @@ func (s *server) GetUserPrivateMessages(ctx context.Context, req *pb.GetUserPriv
 	}, nil
 }
 
+// allowCORS allows Cross Origin Resource Sharing from any origin.
+// Don't do this without consideration in production systems.
+func allowCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if origin := r.Header.Get("Origin"); origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
+				preflightHandler(w, r)
+				return
+			}
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
+func preflightHandler(w http.ResponseWriter, r *http.Request) {
+	headers := []string{"Content-Type", "Accept", "Authorization"}
+	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
+	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
+	grpclog.Infof("Preflight request for %s", r.URL.Path)
+}
+
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	var wg sync.WaitGroup
 
-	// grpc connection to auth service
-	authConn, err := grpc.DialContext(context.Background(), ":8801", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	// grpc connection to user service
-	userConn, err := grpc.DialContext(context.Background(), ":8802", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
+		ctx := context.Background()
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
 
-	// grpc connection to server service
-	serverConn, err := grpc.DialContext(context.Background(), ":8803", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
+		// grpc connection to auth service
+		authConn, err := grpc.DialContext(context.Background(), "auth:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// grpc connection to channel service
-	channelConn, err := grpc.DialContext(context.Background(), ":8804", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
+		// grpc connection to user service
+		userConn, err := grpc.DialContext(context.Background(), "user:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// grpc connection to chat service
-	chatConn, err := grpc.DialContext(context.Background(), ":8805", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
+		// grpc connection to server service
+		serverConn, err := grpc.DialContext(context.Background(), "server:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	server, err := NewServer(authConn, userConn, serverConn, channelConn, chatConn)
-	if err != nil {
-		log.Fatalf("failed to create server: %v", err)
-	}
+		// grpc connection to channel service
+		channelConn, err := grpc.DialContext(context.Background(), "channel:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// Register gRPC server endpoint
-	// Note: Make sure the gRPC server is running properly and accessible
-	mux := runtime.NewServeMux()
-	if err = pb.RegisterGatewayServiceHandlerServer(ctx, mux, server); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+		// grpc connection to chat service
+		chatConn, err := grpc.DialContext(context.Background(), "chat:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	httpServer := &http.Server{Handler: mux}
+		server, err := NewServer(authConn, userConn, serverConn, channelConn, chatConn)
+		if err != nil {
+			log.Fatalf("failed to create server: %v", err)
+		}
 
-	lis, err := net.Listen("tcp", ":8800")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+		// Register gRPC server endpoint
+		// Note: Make sure the gRPC server is running properly and accessible
+		mux := runtime.NewServeMux()
+		if err = pb.RegisterGatewayServiceHandlerServer(ctx, mux, server); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
 
-	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	log.Printf("server listening at %v", lis.Addr())
-	if err := httpServer.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+		httpServer := &http.Server{Handler: allowCORS(mux)}
+
+		lis, err := net.Listen("tcp", ":8080")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		// Start HTTP server (and proxy calls to gRPC server endpoint)
+		log.Printf("server listening at %v", lis.Addr())
+		if err := httpServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		router := mux.NewRouter().StrictSlash(true)
+		sh := http.StripPrefix("/swaggerui/", http.FileServer(http.Dir("./swaggerui/")))
+		router.PathPrefix("/swaggerui/").Handler(sh)
+
+		log.Fatal(http.ListenAndServe(":8081", router))
+	}()
+
+	wg.Wait()
 
 }

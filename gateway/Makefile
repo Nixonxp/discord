@@ -87,7 +87,7 @@ vendor:	.vendor-reset .vendor-googleapis .vendor-google-protobuf .vendor-protova
 	$(PROTO_PATH)/v1/messages.proto $(PROTO_PATH)/v1/service.proto
 
 	$(PROTOC) -I $(VENDOR_PROTO_PATH) --proto_path=$(CURDIR) \
-	--openapiv2_out=. --openapiv2_opt logtostderr=true \
+	--openapiv2_out=$(CURDIR)/swaggerui --openapiv2_opt logtostderr=true \
 	$(PROTO_PATH)/v1/service.proto
 
 

@@ -149,10 +149,12 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "in": "query",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/v1AddChannelRequest"
+            }
           }
         ],
         "tags": [
@@ -1288,6 +1290,18 @@
           "type": "boolean"
         }
       }
+    },
+    "v1AddChannelRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "channel name"
+        }
+      },
+      "required": [
+        "name"
+      ]
     },
     "v1CreateServerResponse": {
       "type": "object",

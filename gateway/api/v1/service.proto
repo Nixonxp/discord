@@ -19,7 +19,6 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   swagger:"2.0"
 };
 
-// AuthService - auth service
 service GatewayService {
   // Регистрация пользователя
   rpc Register(RegisterRequest) returns (RegisterResponse) {
@@ -836,6 +835,7 @@ service GatewayService {
   rpc AddChannel(AddChannelRequest) returns (ActionResponse) {
     option (google.api.http) = {
       post: "/api/v1/channel/create"
+      body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: "channels";

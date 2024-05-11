@@ -158,7 +158,7 @@ func main() {
 
 		reflection.Register(grpcServer)
 
-		lis, err := net.Listen("tcp", ":8801")
+		lis, err := net.Listen("tcp", ":8080")
 		if err != nil {
 			log.Fatalf("failed to listen: %v", err)
 		}
