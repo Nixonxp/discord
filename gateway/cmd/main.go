@@ -198,7 +198,7 @@ func (s *server) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginCallb
 
 	authClient := pb_auth.NewAuthServiceClient(s.authConn)
 	loginReq := pb_auth.OauthLoginCallbackRequest{
-		Code: "code ...",
+		Code: req.GetCode(),
 	}
 
 	loginResponse, err := authClient.OauthLoginCallback(ctx, &loginReq)
@@ -554,7 +554,7 @@ func (s *server) AddChannel(ctx context.Context, req *pb.AddChannelRequest) (*pb
 
 	channelClient := pb_channel.NewChannelServiceClient(s.channelConn)
 	request := pb_channel.AddChannelRequest{
-		Name: "channel name",
+		Name: req.GetName(),
 	}
 
 	response, err := channelClient.AddChannel(ctx, &request)
