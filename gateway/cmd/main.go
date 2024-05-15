@@ -4,17 +4,26 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/gateway/internal/app/server"
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
+	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"time"
 )
 
-func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+var digContainer *dig.Container
 
+func ProvideConfig() *server.Config {
+	config := server.Config{
+		GRPCGatewayPort:        ":8080",
+		HTTPSwaggerUIPort:      ":8081",
+		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{},
+	}
+
+	return &config
+}
+
+func ProvideGatewayService() *services.DiscordGatewayService {
 	// grpc connection to auth service
 	authConn, err := grpc.DialContext(context.Background(), "auth:8080", grpc.WithIdleTimeout(5*time.Second), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithInsecure())
 	if err != nil {
@@ -53,22 +62,39 @@ func main() {
 		ChatConn:    chatConn,
 	})
 
-	// delivery
-	config := server.Config{
-		GRPCGatewayPort:        ":8080",
-		HTTPSwaggerUIPort:      ":8081",
-		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{},
-	}
+	return discordGatewayService
+}
 
-	srv, err := server.NewDiscordGatewayServiceServer(ctx, config, server.Deps{
-		DiscordGatewayService: discordGatewayService,
+func ProvideServer(config *server.Config, service *services.DiscordGatewayService) *server.DiscordGatewayServiceServer {
+	srv, err := server.NewDiscordGatewayServiceServer(context.Background(), *config, server.Deps{
+		DiscordGatewayService: service,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
-	if err = srv.Run(ctx); err != nil {
-		log.Fatalf("run: %v", err)
+	return srv
+}
+
+func main() {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	digContainer = dig.New()
+	digContainer.Provide(ProvideConfig)
+	digContainer.Provide(ProvideGatewayService)
+	digContainer.Provide(ProvideServer)
+
+	applicationRun := func(
+		srv *server.DiscordGatewayServiceServer,
+	) {
+		if err := srv.Run(ctx); err != nil {
+			log.Fatalf("run: %v", err)
+		}
 	}
 
+	if err := digContainer.Invoke(applicationRun); err != nil {
+		log.Fatalf("run: %v", err)
+	}
 }
