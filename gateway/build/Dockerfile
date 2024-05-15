@@ -28,6 +28,6 @@ COPY --from=build /app/swaggerui /swaggerui
 
 # Указываем какой порт необходимо слушать
 # https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8080
+EXPOSE 8080 8081
 
 ENTRYPOINT ["/main"]
