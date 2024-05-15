@@ -3,6 +3,7 @@ module github.com/Nixonxp/discord/channel
 go 1.22.2
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.33.0-20240401165935-b983156c5e99.1
 	github.com/bufbuild/protovalidate-go v0.6.2
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/strfmt v0.23.0
@@ -10,12 +11,13 @@ require (
 	github.com/go-openapi/validate v0.24.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/labstack/echo/v4 v4.12.0
+	golang.org/x/sync v0.6.0
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.34.1
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.33.0-20240401165935-b983156c5e99.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
@@ -44,6 +46,5 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240401170217-c3f982113cda // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

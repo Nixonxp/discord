@@ -32,7 +32,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  uint64 id = 1 [json_name = "id"];
+  string userId = 1 [json_name = "user_id"];
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string email = 4 [json_name = "email"];
@@ -55,7 +55,7 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  uint64 userId = 1 [json_name = "userId"];
+  string userId = 1 [json_name = "user_id"];
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string token = 4 [json_name = "email"];
@@ -75,7 +75,7 @@ message OauthLoginCallbackRequest {
 }
 
 message OauthLoginCallbackResponse {
-  uint64 userId = 1 [json_name = "userId"];
+  string userId = 1 [json_name = "user_id"];
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string token = 4 [json_name = "email"];

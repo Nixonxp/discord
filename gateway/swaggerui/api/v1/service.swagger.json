@@ -1386,9 +1386,8 @@
     "v1LoginResponse": {
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string",
-          "format": "uint64"
+        "user_id": {
+          "type": "string"
         },
         "login": {
           "type": "string"
@@ -1432,9 +1431,8 @@
     "v1OauthLoginCallbackResponse": {
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string",
-          "format": "uint64"
+        "user_id": {
+          "type": "string"
         },
         "login": {
           "type": "string"
@@ -1489,9 +1487,8 @@
     "v1RegisterResponse": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
+        "user_id": {
+          "type": "string"
         },
         "login": {
           "type": "string"
