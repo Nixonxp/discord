@@ -24,7 +24,7 @@ func NewAuthUsecase(d Deps) UsecaseInterface {
 
 func (u *AuthUsecase) Register(ctx context.Context, registerInfo RegisterUserInfo) (*models.User, error) {
 	userID := models.UserID(uuid.New())
-	user, err := u.UserRepo.CreateUser(ctx, models.User{
+	user, err := u.UserRepo.CreateUser(ctx, &models.User{
 		UserID:   userID,
 		Login:    registerInfo.Login,
 		Name:     registerInfo.Name,
@@ -32,32 +32,33 @@ func (u *AuthUsecase) Register(ctx context.Context, registerInfo RegisterUserInf
 		Password: registerInfo.Password,
 	})
 	if err != nil {
-		return &models.User{}, err
+		return nil, err
 	}
 
 	return user, nil
 }
 
 func (u *AuthUsecase) Login(ctx context.Context, loginInfo LoginUserInfo) (*models.User, error) {
-	user, err := u.UserRepo.LoginUser(ctx, models.Login{
+	user, err := u.UserRepo.LoginUser(ctx, &models.Login{
 		Login:    loginInfo.Login,
 		Password: loginInfo.Password,
 	})
 	if err != nil {
-		return &models.User{}, err
+		return nil, err
 	}
 
 	return user, nil
 }
 
 func (u *AuthUsecase) OauthLogin(_ context.Context, _ OauthLoginRequest) (*models.OauthLoginResult, error) {
-	// todo implementation
+	// todo implementation oauth service
 	return &models.OauthLoginResult{
 		Code: "{code}",
 	}, nil
 }
 
 func (u *AuthUsecase) OauthLoginCallback(_ context.Context, _ OauthLoginCallbackRequest) (*models.OauthLoginCallbackResult, error) {
+	// todo implementation oauth service
 	return &models.OauthLoginCallbackResult{
 		User: models.User{
 			UserID:   models.UserID(uuid.New()),

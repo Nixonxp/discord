@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"github.com/Nixonxp/discord/chat/internal/app/models"
+	"math/rand/v2"
 	"time"
 )
 
@@ -23,8 +24,14 @@ func NewChatUsecase(d Deps) UsecaseInterface {
 }
 
 func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
-	_, err := u.ChatRepo.CreateMessage(ctx, models.Message{
-		Id:        1,
+	// временное решение до настоящей реализации
+	messageId := rand.IntN(999-1) + 1
+	chatId := rand.IntN(3-1) + 1
+
+	_, err := u.ChatRepo.CreateMessage(ctx, &models.Message{
+		Id:        uint64(messageId),
+		ChatId:    uint64(chatId),
+		UserId:    req.UserId,
 		Text:      req.Text,
 		Timestamp: time.Now(),
 	})
@@ -37,15 +44,18 @@ func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPr
 	}, nil
 }
 
-func (u *ChatUsecase) GetUserPrivateMessages(_ context.Context, _ GetUserPrivateMessagesRequest) (*models.Messages, error) {
-	// todo add repo
+func (u *ChatUsecase) GetUserPrivateMessages(ctx context.Context, req GetUserPrivateMessagesRequest) (*models.Messages, error) {
+	chatId := rand.IntN(3-1) + 1
+	messages, err := u.ChatRepo.GetMessages(ctx, req.UserId, uint64(chatId))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(messages) == 0 {
+		return nil, models.ErrEmpty
+	}
+
 	return &models.Messages{
-		Data: []*models.Message{
-			{
-				Id:        1,
-				Text:      "text",
-				Timestamp: time.Now(),
-			},
-		},
+		Data: messages,
 	}, nil
 }

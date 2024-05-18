@@ -4,6 +4,8 @@ import "time"
 
 type Message struct {
 	Id        uint64
+	ChatId    uint64
+	UserId    uint64
 	Text      string
 	Timestamp time.Time
 }

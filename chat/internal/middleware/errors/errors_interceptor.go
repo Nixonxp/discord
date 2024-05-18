@@ -31,6 +31,8 @@ func ErrorsUnaryInterceptor() grpc.UnaryServerInterceptor {
 			err = status.Error(codes.Unimplemented, err.Error())
 		case errors.Is(err, models.ErrCreate):
 			err = status.Error(codes.Aborted, err.Error())
+		case errors.Is(err, models.ErrEmpty):
+			err = status.Error(codes.NotFound, err.Error())
 		default:
 			err = status.Error(codes.Internal, err.Error())
 		}

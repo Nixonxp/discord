@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ErrorsUnaryInterceptor - convert any arror to rpc error
+// ErrorsUnaryInterceptor - convert any error to rpc error
 func ErrorsUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,

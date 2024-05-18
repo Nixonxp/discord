@@ -12,7 +12,8 @@ type UsecaseInterface interface {
 	OauthLoginCallback(ctx context.Context, req OauthLoginCallbackRequest) (*models.OauthLoginCallbackResult, error)
 }
 
+//go:generate mockery --name=UsersStorage --filename=users_storage_mock.go --disable-version-string
 type UsersStorage interface {
-	CreateUser(ctx context.Context, user models.User) (*models.User, error)
-	LoginUser(ctx context.Context, loginInfo models.Login) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) (*models.User, error)
+	LoginUser(ctx context.Context, loginInfo *models.Login) (*models.User, error)
 }
