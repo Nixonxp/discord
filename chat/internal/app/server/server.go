@@ -18,8 +18,13 @@ import (
 
 // Config - server config
 type Config struct {
-	GRPCPort string
-	HTTPPort string
+	GRPCPort      string
+	HTTPPort      string
+	MongoDb       string
+	MongoHost     string
+	MongoPort     string
+	MongoUser     string
+	MongoPassword string
 
 	ChainUnaryInterceptors []grpc.UnaryServerInterceptor
 	UnaryInterceptors      []grpc.UnaryServerInterceptor

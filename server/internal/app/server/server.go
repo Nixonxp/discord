@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Nixonxp/discord/server/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/server/pkg/api/v1"
+	grpcutils "github.com/Nixonxp/discord/server/pkg/grpc_utils"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/labstack/echo/v4"
@@ -170,7 +171,7 @@ func (s *ServerServer) CreateServer(ctx context.Context, req *pb.CreateServerReq
 	log.Printf("Create server: received: %s", req.GetName())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	created, err := s.ServerUsecase.CreateServer(ctx, usecases.CreateServerRequest{
@@ -190,7 +191,7 @@ func (s *ServerServer) SearchServer(ctx context.Context, req *pb.SearchServerReq
 	log.Printf("Search server: received: %d", req.GetId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.SearchServer(ctx, usecases.SearchServerRequest{
@@ -211,7 +212,7 @@ func (s *ServerServer) SubscribeServer(ctx context.Context, req *pb.SubscribeSer
 	log.Printf("Subscribe server: received: %d", req.GetServerId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.SubscribeServer(ctx, usecases.SubscribeServerRequest{
@@ -230,7 +231,7 @@ func (s *ServerServer) UnsubscribeServer(ctx context.Context, req *pb.Unsubscrib
 	log.Printf("Unsubscribe server: received: %d", req.GetServerId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.UnsubscribeServer(ctx, usecases.UnsubscribeServerRequest{
@@ -249,7 +250,7 @@ func (s *ServerServer) SearchServerByUserId(ctx context.Context, req *pb.SearchS
 	log.Printf("Search server by user id: received: %d", req.GetUserId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.SearchServerByUserId(ctx, usecases.SearchServerByUserIdRequest{
@@ -269,7 +270,7 @@ func (s *ServerServer) InviteUserToServer(ctx context.Context, req *pb.InviteUse
 	log.Printf("Invite user to server: received: %d", req.GetServerId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.InviteUserToServer(ctx, usecases.InviteUserToServerRequest{
@@ -289,7 +290,7 @@ func (s *ServerServer) PublishMessageOnServer(ctx context.Context, req *pb.Publi
 	log.Printf("Publish message to server: received: %s", req.GetText())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.PublishMessageOnServer(ctx, usecases.PublishMessageOnServerRequest{
@@ -309,7 +310,7 @@ func (s *ServerServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMes
 	log.Printf("Get messages from server: received: %d", req.GetServerId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.GetMessagesFromServer(ctx, usecases.GetMessagesFromServerRequest{

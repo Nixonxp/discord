@@ -353,8 +353,7 @@
             "name": "user_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -401,8 +400,7 @@
             "name": "user_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
@@ -1404,8 +1402,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "string"
         },
         "text": {
           "type": "string"
@@ -1413,6 +1410,12 @@
         "timestamp": {
           "type": "string",
           "format": "date-time"
+        },
+        "chatId": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
         }
       }
     },

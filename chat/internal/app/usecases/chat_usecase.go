@@ -3,7 +3,7 @@ package usecases
 import (
 	"context"
 	"github.com/Nixonxp/discord/chat/internal/app/models"
-	"math/rand/v2"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -23,15 +23,17 @@ func NewChatUsecase(d Deps) UsecaseInterface {
 	}
 }
 
-func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
-	// временное решение до настоящей реализации
-	messageId := rand.IntN(999-1) + 1
-	chatId := rand.IntN(3-1) + 1
+// мок, в будущем будет браться из таблицы
+const chatIdStringMock = "3d0222e1-4b58-4fa7-a38c-171ee345b14e"
 
-	_, err := u.ChatRepo.CreateMessage(ctx, &models.Message{
-		Id:        uint64(messageId),
-		ChatId:    uint64(chatId),
-		UserId:    req.UserId,
+func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
+
+	chatUUID := uuid.MustParse(chatIdStringMock)
+
+	err := u.ChatRepo.CreateMessage(ctx, &models.Message{
+		Id:        models.MessageID(uuid.New()),
+		ChatId:    models.ChatID(chatUUID),
+		OwnerId:   models.OwnerID(uuid.New()),
 		Text:      req.Text,
 		Timestamp: time.Now(),
 	})
@@ -45,8 +47,10 @@ func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPr
 }
 
 func (u *ChatUsecase) GetUserPrivateMessages(ctx context.Context, req GetUserPrivateMessagesRequest) (*models.Messages, error) {
-	chatId := rand.IntN(3-1) + 1
-	messages, err := u.ChatRepo.GetMessages(ctx, req.UserId, uint64(chatId))
+	chatUUID := uuid.MustParse(chatIdStringMock)
+	chatId := models.ChatID(chatUUID)
+
+	messages, err := u.ChatRepo.GetMessages(ctx, chatId)
 	if err != nil {
 		return nil, err
 	}

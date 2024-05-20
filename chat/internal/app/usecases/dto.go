@@ -1,10 +1,10 @@
 package usecases
 
 type SendUserPrivateMessageRequest struct {
-	UserId uint64
+	UserId string
 	Text   string
 }
 
 type GetUserPrivateMessagesRequest struct {
-	UserId uint64
+	UserId string
 }

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"google.golang.org/grpc/grpclog"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -11,7 +10,6 @@ import (
 // Don't do this without consideration in production systems.
 func AllowCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("sdsfsdf")
 		if origin := r.Header.Get("Origin"); origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {

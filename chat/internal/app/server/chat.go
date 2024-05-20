@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/chat/pkg/api/v1"
+	grpcutils "github.com/Nixonxp/discord/chat/pkg/grpc_utils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"math/rand/v2"
@@ -23,9 +24,8 @@ func isServiceOk(probability int) bool {
 
 func (s *ChatServer) SendUserPrivateMessage(ctx context.Context, req *pb.SendUserPrivateMessageRequest) (*pb.ActionResponse, error) {
 	log.Printf("Send private message: received: %s", req.GetUserId())
-
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChatUsecase.SendUserPrivateMessage(ctx, usecases.SendUserPrivateMessageRequest{
@@ -45,7 +45,7 @@ func (s *ChatServer) GetUserPrivateMessages(ctx context.Context, req *pb.GetUser
 	log.Printf("Send private message: received: %d", req.GetUserId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChatUsecase.GetUserPrivateMessages(ctx, usecases.GetUserPrivateMessagesRequest{
@@ -55,15 +55,20 @@ func (s *ChatServer) GetUserPrivateMessages(ctx context.Context, req *pb.GetUser
 		return nil, err
 	}
 
-	return &pb.GetMessagesResponse{
-		Messages: []*pb.Message{
-			{
-				Id:   result.Data[0].Id,
-				Text: result.Data[0].Text,
-				Timestamp: &timestamppb.Timestamp{
-					Seconds: result.Data[0].Timestamp.Unix(),
-				},
+	messages := make([]*pb.Message, len(result.Data))
+	for k, v := range result.Data {
+		messages[k] = &pb.Message{
+			Id:   v.Id.String(),
+			Text: v.Text,
+			Timestamp: &timestamppb.Timestamp{
+				Seconds: v.Timestamp.Unix(),
 			},
-		},
+			OwnerId: v.OwnerId.String(),
+			ChatId:  v.ChatId.String(),
+		}
+	}
+
+	return &pb.GetMessagesResponse{
+		Messages: messages,
 	}, nil
 }

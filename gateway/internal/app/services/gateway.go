@@ -487,6 +487,8 @@ func (s *DiscordGatewayService) GetUserPrivateMessages(ctx context.Context, req 
 			Id:        m.GetId(),
 			Text:      m.GetText(),
 			Timestamp: m.GetTimestamp(),
+			OwnerId:   m.OwnerId,
+			ChatId:    m.ChatId,
 		}
 	}
 

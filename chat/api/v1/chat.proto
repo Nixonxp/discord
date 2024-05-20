@@ -10,7 +10,7 @@ service ChatService {
 }
 
 message SendUserPrivateMessageRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
   string text = 2;
 }
 
@@ -23,7 +23,7 @@ message ActionResponse {
 }
 
 message GetUserPrivateMessagesRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message GetMessagesResponse {
@@ -31,7 +31,9 @@ message GetMessagesResponse {
 }
 
 message Message {
-  uint64 id = 1;
+  string id = 1;
   string text = 2;
   google.protobuf.Timestamp timestamp = 3;
+  string chat_id = 4;
+  string owner_id = 5;
 }

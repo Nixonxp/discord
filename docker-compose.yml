@@ -39,3 +39,23 @@ services:
     build:
       context: ./chat
       dockerfile: ./build/Dockerfile
+
+  mongodb-chat:
+    image: mongo:7.0.5
+    restart: unless-stopped
+    env_file: ./chat/.env
+    volumes:
+      - mongo-volume:/data/db
+    ports:
+      - 27117:27017
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
+
+volumes:
+  mongo-volume:
+  cache:
+    driver: local

@@ -6,6 +6,7 @@ import (
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
 	"github.com/Nixonxp/discord/gateway/internal/middleware"
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
+	grpcutils "github.com/Nixonxp/discord/gateway/pkg/grpc_utils"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -144,7 +145,7 @@ func (s *DiscordGatewayServiceServer) Run(ctx context.Context) error {
 
 func (s *DiscordGatewayServiceServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.Register(ctx, req)
@@ -158,7 +159,7 @@ func (s *DiscordGatewayServiceServer) Register(ctx context.Context, req *pb.Regi
 func (s *DiscordGatewayServiceServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.Login(ctx, req)
@@ -181,7 +182,7 @@ func (s *DiscordGatewayServiceServer) OauthLogin(ctx context.Context, req *pb.Oa
 func (s *DiscordGatewayServiceServer) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginCallbackRequest) (*pb.OauthLoginCallbackResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.OauthLoginCallback(ctx, req)
@@ -195,7 +196,7 @@ func (s *DiscordGatewayServiceServer) OauthLoginCallback(ctx context.Context, re
 func (s *DiscordGatewayServiceServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserDataResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.UpdateUser(ctx, req)
@@ -208,7 +209,7 @@ func (s *DiscordGatewayServiceServer) UpdateUser(ctx context.Context, req *pb.Up
 
 func (s *DiscordGatewayServiceServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginRequest) (*pb.UserDataResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.GetUserByLogin(ctx, req)
@@ -221,7 +222,7 @@ func (s *DiscordGatewayServiceServer) GetUserByLogin(ctx context.Context, req *p
 
 func (s *DiscordGatewayServiceServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsRequest) (*pb.GetUserFriendsResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.GetUserFriends(ctx, req)
@@ -234,7 +235,7 @@ func (s *DiscordGatewayServiceServer) GetUserFriends(ctx context.Context, req *p
 
 func (s *DiscordGatewayServiceServer) AddToFriendByUserId(ctx context.Context, req *pb.AddToFriendByUserIdRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.AddToFriendByUserId(ctx, req)
@@ -247,7 +248,7 @@ func (s *DiscordGatewayServiceServer) AddToFriendByUserId(ctx context.Context, r
 
 func (s *DiscordGatewayServiceServer) AcceptFriendInvite(ctx context.Context, req *pb.AcceptFriendInviteRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.AcceptFriendInvite(ctx, req)
@@ -260,7 +261,7 @@ func (s *DiscordGatewayServiceServer) AcceptFriendInvite(ctx context.Context, re
 
 func (s *DiscordGatewayServiceServer) DeclineFriendInvite(ctx context.Context, req *pb.DeclineFriendInviteRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.DeclineFriendInvite(ctx, req)
@@ -274,7 +275,7 @@ func (s *DiscordGatewayServiceServer) DeclineFriendInvite(ctx context.Context, r
 func (s *DiscordGatewayServiceServer) CreateServer(ctx context.Context, req *pb.CreateServerRequest) (*pb.CreateServerResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.CreateServer(ctx, req)
@@ -287,7 +288,7 @@ func (s *DiscordGatewayServiceServer) CreateServer(ctx context.Context, req *pb.
 
 func (s *DiscordGatewayServiceServer) SearchServer(ctx context.Context, req *pb.SearchServerRequest) (*pb.SearchServerResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.SearchServer(ctx, req)
@@ -300,7 +301,7 @@ func (s *DiscordGatewayServiceServer) SearchServer(ctx context.Context, req *pb.
 
 func (s *DiscordGatewayServiceServer) SubscribeServer(ctx context.Context, req *pb.SubscribeServerRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 	resp, err := s.DiscordGatewayService.SubscribeServer(ctx, req)
 	if err != nil {
@@ -312,7 +313,7 @@ func (s *DiscordGatewayServiceServer) SubscribeServer(ctx context.Context, req *
 
 func (s *DiscordGatewayServiceServer) UnsubscribeServer(ctx context.Context, req *pb.UnsubscribeServerRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.UnsubscribeServer(ctx, req)
@@ -325,7 +326,7 @@ func (s *DiscordGatewayServiceServer) UnsubscribeServer(ctx context.Context, req
 
 func (s *DiscordGatewayServiceServer) SearchServerByUserId(ctx context.Context, req *pb.SearchServerByUserIdRequest) (*pb.SearchServerByUserIdResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.SearchServerByUserId(ctx, req)
@@ -338,7 +339,7 @@ func (s *DiscordGatewayServiceServer) SearchServerByUserId(ctx context.Context, 
 
 func (s *DiscordGatewayServiceServer) InviteUserToServer(ctx context.Context, req *pb.InviteUserToServerRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.InviteUserToServer(ctx, req)
@@ -351,7 +352,7 @@ func (s *DiscordGatewayServiceServer) InviteUserToServer(ctx context.Context, re
 
 func (s *DiscordGatewayServiceServer) PublishMessageOnServer(ctx context.Context, req *pb.PublishMessageOnServerRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.PublishMessageOnServer(ctx, req)
@@ -365,7 +366,7 @@ func (s *DiscordGatewayServiceServer) PublishMessageOnServer(ctx context.Context
 func (s *DiscordGatewayServiceServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMessagesFromServerRequest) (*pb.GetMessagesResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.GetMessagesFromServer(ctx, req)
@@ -378,7 +379,7 @@ func (s *DiscordGatewayServiceServer) GetMessagesFromServer(ctx context.Context,
 
 func (s *DiscordGatewayServiceServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.AddChannel(ctx, req)
@@ -391,7 +392,7 @@ func (s *DiscordGatewayServiceServer) AddChannel(ctx context.Context, req *pb.Ad
 
 func (s *DiscordGatewayServiceServer) DeleteChannel(ctx context.Context, req *pb.DeleteChannelRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.DeleteChannel(ctx, req)
@@ -404,7 +405,7 @@ func (s *DiscordGatewayServiceServer) DeleteChannel(ctx context.Context, req *pb
 
 func (s *DiscordGatewayServiceServer) JoinChannel(ctx context.Context, req *pb.JoinChannelRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.JoinChannel(ctx, req)
@@ -417,7 +418,7 @@ func (s *DiscordGatewayServiceServer) JoinChannel(ctx context.Context, req *pb.J
 
 func (s *DiscordGatewayServiceServer) LeaveChannel(ctx context.Context, req *pb.LeaveChannelRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.LeaveChannel(ctx, req)
@@ -430,7 +431,7 @@ func (s *DiscordGatewayServiceServer) LeaveChannel(ctx context.Context, req *pb.
 
 func (s *DiscordGatewayServiceServer) SendUserPrivateMessage(ctx context.Context, req *pb.SendUserPrivateMessageRequest) (*pb.ActionResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.SendUserPrivateMessage(ctx, req)
@@ -444,7 +445,7 @@ func (s *DiscordGatewayServiceServer) SendUserPrivateMessage(ctx context.Context
 func (s *DiscordGatewayServiceServer) GetUserPrivateMessages(ctx context.Context, req *pb.GetUserPrivateMessagesRequest) (*pb.GetMessagesResponse, error) {
 	if err := s.validator.Validate(req); err != nil {
 		log.Println(err)
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	resp, err := s.DiscordGatewayService.GetUserPrivateMessages(ctx, req)

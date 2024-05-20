@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/channel/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/channel/pkg/api/v1"
+	grpcutils "github.com/Nixonxp/discord/channel/pkg/grpc_utils"
 	"log"
 )
 
@@ -11,7 +12,7 @@ func (s *ChannelServer) AddChannel(ctx context.Context, req *pb.AddChannelReques
 	log.Printf("add channel: received: %s", req.GetName())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChannelUsecase.AddChannel(ctx, usecases.AddChannelRequest{
@@ -30,7 +31,7 @@ func (s *ChannelServer) DeleteChannel(ctx context.Context, req *pb.DeleteChannel
 	log.Printf("Delete channel: received: %d", req.GetChannelId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChannelUsecase.DeleteChannel(ctx, usecases.DeleteChannelRequest{
@@ -49,7 +50,7 @@ func (s *ChannelServer) JoinChannel(ctx context.Context, req *pb.JoinChannelRequ
 	log.Printf("Join channel: received: %d", req.GetChannelId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChannelUsecase.JoinChannel(ctx, usecases.JoinChannelRequest{
@@ -68,7 +69,7 @@ func (s *ChannelServer) LeaveChannel(ctx context.Context, req *pb.LeaveChannelRe
 	log.Printf("Leave channel: received: %d", req.GetChannelId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ChannelUsecase.LeaveChannel(ctx, usecases.LeaveChannelRequest{

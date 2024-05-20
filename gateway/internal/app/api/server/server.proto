@@ -78,7 +78,9 @@ message GetMessagesFromServerResponse {
 }
 
 message Message {
-  uint64 id = 1;
+  string id = 1;
   string text = 2;
   google.protobuf.Timestamp timestamp = 3;
+  string chat_id = 4;
+  string owner_id = 5;
 }

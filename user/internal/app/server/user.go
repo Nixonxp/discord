@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
+	grpcutils "github.com/Nixonxp/discord/user/pkg/grpc_utils"
 	"log"
 	"math/rand/v2"
 )
@@ -24,7 +25,7 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 	log.Printf("update user: received: %s", req.Login)
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.UpdateUser(ctx, usecases.UpdateUserRequest{
@@ -50,7 +51,7 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 	log.Printf("get user by login: received: %s", req.Login)
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginRequest{
@@ -73,7 +74,7 @@ func (s *UserServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsR
 	log.Printf("get user friends received")
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.GetUserFriends(ctx, usecases.GetUserFriendsRequest{})
@@ -97,7 +98,7 @@ func (s *UserServer) AddToFriendByUserId(ctx context.Context, req *pb.AddToFrien
 	log.Printf("add user to friends received: %d", req.UserId)
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.AddToFriendByUserId(ctx, usecases.AddToFriendByUserIdRequest{
@@ -116,7 +117,7 @@ func (s *UserServer) AcceptFriendInvite(ctx context.Context, req *pb.AcceptFrien
 	log.Printf("accept user to friends received: %d", req.GetInviteId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.AcceptFriendInvite(ctx, usecases.AcceptFriendInviteRequest{
@@ -135,7 +136,7 @@ func (s *UserServer) DeclineFriendInvite(ctx context.Context, req *pb.DeclineFri
 	log.Printf("accepdecline user to friends received: %d", req.GetInviteId())
 
 	if err := s.validator.Validate(req); err != nil {
-		return nil, rpcValidationError(err)
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.UserUsecase.DeclineFriendInvite(ctx, usecases.DeclineFriendInviteRequest{

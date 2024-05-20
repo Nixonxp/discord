@@ -238,9 +238,11 @@ message GetMessagesResponse {
 }
 
 message Message {
-  uint64 id = 1;
+  string id = 1;
   string text = 2;
   google.protobuf.Timestamp timestamp = 3;
+  string chat_id = 4;
+  string owner_id = 5;
 }
 
 message AddChannelRequest {
@@ -268,8 +270,8 @@ message LeaveChannelRequest {
 }
 
 message SendUserPrivateMessageRequest {
-  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
   string text = 2 [json_name = "text", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"message text\""
@@ -277,7 +279,7 @@ message SendUserPrivateMessageRequest {
 }
 
 message GetUserPrivateMessagesRequest {
-  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
