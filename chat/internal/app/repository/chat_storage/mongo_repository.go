@@ -12,13 +12,20 @@ import (
 	"time"
 )
 
+type MongoCollectionInterface interface {
+	UpdateOne(ctx context.Context, filter interface{}, update interface{},
+		opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
+	Find(ctx context.Context, filter interface{},
+		opts ...*options.FindOptions) (cur *mongo.Cursor, err error)
+}
+
 type MongoChatRepository struct {
-	mongo *mongo.Collection
+	mongo MongoCollectionInterface
 }
 
 var _ usecases.ChatsStorage = (*MongoChatRepository)(nil)
 
-func NewMongoChatRepository(mongo *mongo.Collection) *MongoChatRepository {
+func NewMongoChatRepository(mongo MongoCollectionInterface) *MongoChatRepository {
 	return &MongoChatRepository{
 		mongo: mongo,
 	}

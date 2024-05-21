@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/gateway/internal/app/server"
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
+	"github.com/Nixonxp/discord/gateway/pkg/application"
 	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -90,6 +91,15 @@ func main() {
 		srv *server.DiscordGatewayServiceServer,
 	) {
 		if err := srv.Run(ctx); err != nil {
+			log.Fatalf("run: %v", err)
+		}
+
+		app, err := application.NewApp(srv)
+		if err != nil {
+			log.Fatalf("failed to create app: %v", err)
+		}
+
+		if err = app.Run(ctx); err != nil {
 			log.Fatalf("run: %v", err)
 		}
 	}

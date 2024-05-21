@@ -6,6 +6,7 @@ import (
 	"github.com/Nixonxp/discord/server/internal/app/server"
 	"github.com/Nixonxp/discord/server/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/server/internal/middleware/errors"
+	"github.com/Nixonxp/discord/server/pkg/application"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -36,7 +37,12 @@ func main() {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
-	if err = srv.Run(ctx); err != nil {
+	app, err := application.NewApp(srv)
+	if err != nil {
+		log.Fatalf("failed to create app: %v", err)
+	}
+
+	if err = app.Run(ctx); err != nil {
 		log.Fatalf("run: %v", err)
 	}
 }
