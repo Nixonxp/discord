@@ -6,6 +6,7 @@ import (
 	"github.com/Nixonxp/discord/chat/internal/app/server"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/chat/internal/middleware/errors"
+	pb "github.com/Nixonxp/discord/chat/pkg/api/v1"
 	"github.com/Nixonxp/discord/chat/pkg/application"
 	mongoCollection "github.com/Nixonxp/discord/chat/pkg/mongo"
 	"google.golang.org/grpc"
@@ -19,6 +20,16 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	config := application.Config{
+		GRPCPort: ":8080",
+		HTTPPort: ":8081",
+	}
+
+	app, err := application.NewApp(&config)
+	if err != nil {
+		log.Fatalf("failed to create app: %v", err)
+	}
 
 	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -40,26 +51,27 @@ func main() {
 		ChatRepo: chatMongoRepo,
 	})
 
-	config := server.Config{
-		GRPCPort: ":8080",
-		HTTPPort: ":8081",
-		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
-			middleware.ErrorsUnaryInterceptor(),
-		},
-	}
-	srv, err := server.NewChatServer(ctx, config, server.Deps{
+	srv, err := server.NewChatServer(ctx, server.Deps{
 		ChatUsecase: chatUsecase,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
-	app, err := application.NewApp(srv)
-	if err != nil {
-		log.Fatalf("failed to create app: %v", err)
+	grpcConfig := server.Config{
+		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
+			middleware.ErrorsUnaryInterceptor(),
+		},
 	}
+	grpcServerOptions := server.UnaryInterceptorsToGrpcServerOptions(grpcConfig.UnaryInterceptors...)
+	grpcServerOptions = append(grpcServerOptions,
+		grpc.ChainUnaryInterceptor(grpcConfig.ChainUnaryInterceptors...),
+	)
 
-	if err = app.Run(ctx); err != nil {
+	grpcServer := grpc.NewServer(grpcServerOptions...)
+	pb.RegisterChatServiceServer(grpcServer, srv)
+
+	if err = app.Run(ctx, grpcServer); err != nil {
 		log.Fatalf("run: %v", err)
 	}
 }

@@ -7,20 +7,7 @@ import (
 	grpcutils "github.com/Nixonxp/discord/chat/pkg/grpc_utils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
-	"math/rand/v2"
 )
-
-// isServiceOk в зависимости от входящего значения вернет false, например
-// передано 5, тогда (100 / 5 = 20) 20% вероятностью вернется false, для теста сервиса
-func isServiceOk(probability int) bool {
-	randNumber := rand.IntN(probability-1) + 1
-
-	if randNumber == 1 {
-		return false
-	}
-
-	return true
-}
 
 func (s *ChatServer) SendUserPrivateMessage(ctx context.Context, req *pb.SendUserPrivateMessageRequest) (*pb.ActionResponse, error) {
 	log.Printf("Send private message: received: %s", req.GetUserId())

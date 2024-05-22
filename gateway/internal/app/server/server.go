@@ -4,13 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
-	"github.com/Nixonxp/discord/gateway/internal/middleware"
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/gateway/pkg/grpc_utils"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/gorilla/mux"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -47,7 +44,7 @@ type DiscordGatewayServiceServer struct {
 	}
 }
 
-func NewDiscordGatewayServiceServer(ctx context.Context, cfg Config, d Deps) (*DiscordGatewayServiceServer, error) {
+func NewDiscordGatewayServiceServer(ctx context.Context, d Deps) (*DiscordGatewayServiceServer, error) {
 	srv := &DiscordGatewayServiceServer{
 		Deps: d,
 	}
@@ -89,58 +86,7 @@ func NewDiscordGatewayServiceServer(ctx context.Context, cfg Config, d Deps) (*D
 		srv.validator = validator
 	}
 
-	// grpc gateway
-	{
-		mux := runtime.NewServeMux()
-		if err := pb.RegisterGatewayServiceHandlerServer(ctx, mux, srv); err != nil {
-			return nil, fmt.Errorf("server: failed to register handler: %v", err)
-		}
-
-		httpServer := &http.Server{Handler: middleware.AllowCORS(mux)}
-
-		lis, err := net.Listen("tcp", cfg.GRPCGatewayPort)
-		if err != nil {
-			return nil, fmt.Errorf("server: failed to listen: %v", err)
-		}
-
-		srv.grpcGateway.server = httpServer
-		srv.grpcGateway.lis = lis
-	}
-
-	{
-		router := mux.NewRouter().StrictSlash(true)
-		sh := http.StripPrefix("/swaggerui/", http.FileServer(http.Dir("./swaggerui/")))
-		router.PathPrefix("/swaggerui/").Handler(sh)
-
-		srv.http.router = router
-		srv.http.port = cfg.HTTPSwaggerUIPort
-	}
-
 	return srv, nil
-}
-
-// Run - serve
-func (s *DiscordGatewayServiceServer) Run(ctx context.Context) error {
-	group := errgroup.Group{}
-
-	group.Go(func() error {
-		log.Println("start server", s.grpcGateway.lis.Addr())
-		if err := s.grpcGateway.server.Serve(s.grpcGateway.lis); err != nil {
-			return fmt.Errorf("server: serve grpc gateway: %v", err)
-		}
-		return nil
-	})
-
-	group.Go(func() error {
-		log.Println("start swagger UI", s.http.port)
-		err := http.ListenAndServe(s.http.port, s.http.router)
-		if err != nil {
-			return fmt.Errorf("server: serve swagger UI: %v", err)
-		}
-		return nil
-	})
-
-	return group.Wait()
 }
 
 func (s *DiscordGatewayServiceServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {

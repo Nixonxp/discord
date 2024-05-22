@@ -4,21 +4,24 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/gateway/internal/app/server"
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
+	"github.com/Nixonxp/discord/gateway/internal/middleware"
+	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
 	"github.com/Nixonxp/discord/gateway/pkg/application"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
+	"net/http"
 	"time"
 )
 
 var digContainer *dig.Container
 
-func ProvideConfig() *server.Config {
-	config := server.Config{
-		GRPCGatewayPort:        ":8080",
-		HTTPSwaggerUIPort:      ":8081",
-		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{},
+func ProvideConfig() *application.Config {
+	config := application.Config{
+		GRPCGatewayPort:   ":8080",
+		SwaggerUIHTTPPort: ":8081",
 	}
 
 	return &config
@@ -66,15 +69,22 @@ func ProvideGatewayService() *services.DiscordGatewayService {
 	return discordGatewayService
 }
 
-func ProvideServer(config *server.Config, service *services.DiscordGatewayService) *server.DiscordGatewayServiceServer {
-	srv, err := server.NewDiscordGatewayServiceServer(context.Background(), *config, server.Deps{
+func ProvideServer(service *services.DiscordGatewayService) *http.Server {
+	srv, err := server.NewDiscordGatewayServiceServer(context.Background(), server.Deps{
 		DiscordGatewayService: service,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
-	return srv
+	mux := runtime.NewServeMux()
+	if err := pb.RegisterGatewayServiceHandlerServer(context.Background(), mux, srv); err != nil {
+		log.Fatalf("server: failed to register handler: %v", err)
+	}
+
+	httpServer := &http.Server{Handler: middleware.AllowCORS(mux)}
+
+	return httpServer
 }
 
 func main() {
@@ -88,18 +98,17 @@ func main() {
 	digContainer.Provide(ProvideServer)
 
 	applicationRun := func(
-		srv *server.DiscordGatewayServiceServer,
+		cfg *application.Config,
+		srv *http.Server,
 	) {
-		if err := srv.Run(ctx); err != nil {
-			log.Fatalf("run: %v", err)
-		}
-
-		app, err := application.NewApp(srv)
+		app, err := application.NewApp(cfg)
 		if err != nil {
 			log.Fatalf("failed to create app: %v", err)
 		}
 
-		if err = app.Run(ctx); err != nil {
+		app.AddGatewayServer(srv)
+
+		if err = app.Run(ctx, nil); err != nil {
 			log.Fatalf("run: %v", err)
 		}
 	}
