@@ -7,20 +7,15 @@ import (
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/gateway/pkg/grpc_utils"
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/gorilla/mux"
 	"google.golang.org/grpc"
 	"log"
-	"net"
-	"net/http"
 )
 
 // Config - server config
 type Config struct {
-	GRPCGatewayPort   string
-	HTTPSwaggerUIPort string
-
-	ChainUnaryInterceptors []grpc.UnaryServerInterceptor
-	UnaryInterceptors      []grpc.UnaryServerInterceptor
+	ChainUnaryInterceptors  []grpc.UnaryServerInterceptor
+	UnaryInterceptors       []grpc.UnaryServerInterceptor
+	UnaryClientInterceptors []grpc.UnaryClientInterceptor
 }
 
 type Deps struct {
@@ -32,16 +27,6 @@ type DiscordGatewayServiceServer struct {
 	Deps
 
 	validator *protovalidate.Validator
-
-	http struct {
-		router *mux.Router
-		port   string
-	}
-
-	grpcGateway struct {
-		lis    net.Listener
-		server *http.Server
-	}
 }
 
 func NewDiscordGatewayServiceServer(ctx context.Context, d Deps) (*DiscordGatewayServiceServer, error) {

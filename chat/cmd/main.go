@@ -9,6 +9,9 @@ import (
 	pb "github.com/Nixonxp/discord/chat/pkg/api/v1"
 	"github.com/Nixonxp/discord/chat/pkg/application"
 	mongoCollection "github.com/Nixonxp/discord/chat/pkg/mongo"
+	"github.com/Nixonxp/discord/chat/pkg/rate_limiter"
+	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"log"
 	"time"
@@ -58,9 +61,12 @@ func main() {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
+	globalLimiter := rate_limiter.NewRateLimiter(1000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
 			middleware.ErrorsUnaryInterceptor(),
+			ratelimit.UnaryServerInterceptor(globalLimiter),
+			grpc_recovery.UnaryServerInterceptor(),
 		},
 	}
 	grpcServerOptions := server.UnaryInterceptorsToGrpcServerOptions(grpcConfig.UnaryInterceptors...)

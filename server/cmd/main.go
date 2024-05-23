@@ -8,6 +8,9 @@ import (
 	middleware "github.com/Nixonxp/discord/server/internal/middleware/errors"
 	pb "github.com/Nixonxp/discord/server/pkg/api/v1"
 	"github.com/Nixonxp/discord/server/pkg/application"
+	"github.com/Nixonxp/discord/server/pkg/rate_limiter"
+	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -32,10 +35,12 @@ func main() {
 		ServerRepo: serverInMemoryRepo,
 	})
 
-	// delivery
+	globalLimiter := rate_limiter.NewRateLimiter(1000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
 			middleware.ErrorsUnaryInterceptor(),
+			ratelimit.UnaryServerInterceptor(globalLimiter),
+			grpc_recovery.UnaryServerInterceptor(),
 		},
 	}
 
