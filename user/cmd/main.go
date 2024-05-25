@@ -8,12 +8,18 @@ import (
 	middleware "github.com/Nixonxp/discord/user/internal/middleware/errors"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
 	"github.com/Nixonxp/discord/user/pkg/application"
+	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/Nixonxp/discord/user/pkg/rate_limiter"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"log"
+	"time"
 )
+
+const DSN = "user=admin password=password123 host=postgres port=5432 dbname=discord sslmode=require pool_max_conns=10"
+
+//const DSN = "user=admin password=password123 host=localhost port=5432 dbname=discord sslmode=require pool_max_conns=10" // todo delete
 
 func main() {
 	ctx := context.Background()
@@ -30,9 +36,21 @@ func main() {
 		log.Fatalf("failed to create app: %v", err)
 	}
 
-	userInMemoryRepo := repository.NewInMemoryUserRepository()
+	// repository
+	pool, err := postgres.NewConnectionPool(ctx, DSN,
+		postgres.WithMaxConnIdleTime(5*time.Minute),
+		postgres.WithMaxConnLifeTime(time.Hour),
+		postgres.WithMaxConnectionsCount(10),
+		postgres.WithMinConnectionsCount(5),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userRepo := repository.NewUserPostgresqlRepository(pool)
+
 	userUsecase := usecases.NewUserUsecase(usecases.Deps{
-		UserRepo: userInMemoryRepo,
+		UserRepo: userRepo,
 	})
 
 	globalLimiter := rate_limiter.NewRateLimiter(1000)

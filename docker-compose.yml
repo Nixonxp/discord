@@ -19,13 +19,13 @@ services:
     build:
       context: ./auth
       dockerfile: ./build/Dockerfile
-    ports:
-      - "8811:8080"
 
   user:
     build:
       context: ./user
       dockerfile: ./build/Dockerfile
+    depends_on:
+      - postgres
 
   server:
     build:
@@ -57,7 +57,22 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
       - MONGO_INITDB_DATABASE=${MONGO_DB}
 
+  postgres:
+    container_name: postgres_discord
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "discord"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password123"
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
 volumes:
+  postgres:
   mongo-volume:
   cache:
     driver: local

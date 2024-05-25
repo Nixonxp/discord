@@ -7,7 +7,9 @@ import (
 )
 
 type Deps struct {
-	UserRepo UsersStorage
+	// deprecated
+	UserRepo    UsersStorage
+	UserService UsecaseServiceInterface
 }
 
 type AuthUsecase struct {
@@ -23,14 +25,7 @@ func NewAuthUsecase(d Deps) UsecaseInterface {
 }
 
 func (u *AuthUsecase) Register(ctx context.Context, registerInfo RegisterUserInfo) (*models.User, error) {
-	userID := models.UserID(uuid.New())
-	user, err := u.UserRepo.CreateUser(ctx, &models.User{
-		UserID:   userID,
-		Login:    registerInfo.Login,
-		Name:     registerInfo.Name,
-		Email:    registerInfo.Email,
-		Password: registerInfo.Password,
-	})
+	user, err := u.UserService.Register(ctx, registerInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -39,10 +34,7 @@ func (u *AuthUsecase) Register(ctx context.Context, registerInfo RegisterUserInf
 }
 
 func (u *AuthUsecase) Login(ctx context.Context, loginInfo LoginUserInfo) (*models.User, error) {
-	user, err := u.UserRepo.LoginUser(ctx, &models.Login{
-		Login:    loginInfo.Login,
-		Password: loginInfo.Password,
-	})
+	user, err := u.UserService.Login(ctx, loginInfo)
 	if err != nil {
 		return nil, err
 	}

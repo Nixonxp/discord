@@ -34,7 +34,7 @@ func ProvideConfig() (*application.Config, *server.Config) {
 	retryOpts := []grpcretry.CallOption{
 		grpcretry.WithCodes(codes.Canceled, codes.Aborted, codes.DeadlineExceeded),
 		grpcretry.WithMax(uint(3)),
-		grpcretry.WithPerRetryTimeout(time.Second * 5),
+		grpcretry.WithPerRetryTimeout(time.Second * 15),
 	}
 
 	cb := circuitbreaker.New(

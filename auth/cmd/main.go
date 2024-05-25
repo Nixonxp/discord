@@ -4,6 +4,7 @@ import (
 	"context"
 	repository "github.com/Nixonxp/discord/auth/internal/app/repository/user_storage"
 	"github.com/Nixonxp/discord/auth/internal/app/server"
+	"github.com/Nixonxp/discord/auth/internal/app/services/user"
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/auth/internal/middleware/errors"
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
@@ -12,8 +13,12 @@ import (
 	"github.com/Nixonxp/discord/auth/pkg/rate_limiter"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
+	ratelimitCustom "github.com/tommy-sho/rate-limiter-grpc-go"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"log"
+	"time"
 )
 
 func main() {
@@ -26,6 +31,25 @@ func main() {
 		HTTPPort: ":8081",
 	}
 
+	retryOpts := []grpcretry.CallOption{
+		grpcretry.WithCodes(codes.Canceled, codes.Aborted, codes.DeadlineExceeded),
+		grpcretry.WithMax(uint(3)),
+		grpcretry.WithPerRetryTimeout(time.Second * 15),
+	}
+
+	serverConfig := server.Config{
+		UserServiceUrl: "user:8080",
+		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
+			grpcretry.UnaryClientInterceptor(retryOpts...),
+			ratelimitCustom.UnaryClientInterceptor(ratelimitCustom.NewLimiter(1000)),
+		},
+	}
+
+	userServiceClient, err := user.NewClient(serverConfig)
+	if err != nil {
+		log.Fatalf("failed to create app: %v", err)
+	}
+
 	app, err := application.NewApp(&config)
 	if err != nil {
 		log.Fatalf("failed to create app: %v", err)
@@ -33,7 +57,8 @@ func main() {
 
 	userInMemoryRepo := repository.NewInMemoryUserRepository()
 	authUsecase := usecases.NewAuthUsecase(usecases.Deps{
-		UserRepo: userInMemoryRepo,
+		UserRepo:    userInMemoryRepo,
+		UserService: userServiceClient,
 	})
 
 	// limiter per method

@@ -49,6 +49,8 @@ func NewUserServer(ctx context.Context, d Deps) (*UserServer, error) {
 		validator, err := protovalidate.New(
 			protovalidate.WithDisableLazy(true),
 			protovalidate.WithMessages(
+				&pb.CreateUserRequest{},
+				&pb.GetUserByLoginAndPasswordRequest{},
 				&pb.UpdateUserRequest{},
 				&pb.GetUserByLoginRequest{},
 				&pb.GetUserFriendsRequest{},

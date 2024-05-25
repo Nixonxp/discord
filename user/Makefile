@@ -13,6 +13,9 @@ PKG_PROTO_PATH := $(CURDIR)/pkg
 # Путь до завендореных protobuf файлов
 VENDOR_PROTO_PATH := $(CURDIR)/vendor.protobuf
 
+# Путь до файлов миграций
+MIGRATION_DIR :=./migrations
+
 # устанавливаем необходимые плагины
 .bin-deps: export GOBIN := $(LOCAL_BIN)
 .bin-deps:
@@ -94,7 +97,25 @@ generate: .bin-deps .protoc-generate .tidy
 # Билд приложения
 build:
 	go build -o $(LOCAL_BIN) ./cmd/main
-	
+
+
+.install-migrate: export GOBIN := $(LOCAL_BIN)
+.install-migrate:
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+create-migartion: .install-migrate
+create-migartion:
+	PATH=$(LOCAL_BIN) migrate create -ext sql -dir "${MIGRATION_DIR}" -seq migration
+
+
+DB_DSN:=postgresql://admin:password123@0.0.0.0:5432/discord?sslmode=disable
+
+migrate:
+	PATH=$(LOCAL_BIN) migrate -path ${MIGRATION_DIR} -database "${DB_DSN}" -verbose up
+
+migrate-rollback:
+	PATH=$(LOCAL_BIN) migrate -path ${MIGRATION_DIR} -database "${DB_DSN}" -verbose down 1
+
 # Объявляем, что текущие команды не являются файлами и
 # интсрументируем Makefile не искать изменения в файловой системе
 .PHONY: \
@@ -104,4 +125,5 @@ build:
 	.vendor-protovalidate \
 	vendor \
 	generate \
-	build
+	build	\
+	migrate

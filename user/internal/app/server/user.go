@@ -5,20 +5,58 @@ import (
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/user/pkg/grpc_utils"
+	"github.com/google/uuid"
 	"log"
-	"math/rand/v2"
 )
 
-// isServiceOk в зависимости от входящего значения вернет false, например
-// передано 5, тогда (100 / 5 = 20) 20% вероятностью вернется false, для теста сервиса
-func isServiceOk(probability int) bool {
-	randNumber := rand.IntN(probability-1) + 1
+func (s *UserServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.UserDataResponse, error) {
+	log.Printf("create user: received: %s", req.Login)
 
-	if randNumber == 1 {
-		return false
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	return true
+	result, err := s.UserUsecase.CreateUser(ctx, usecases.CreateUserRequest{
+		Login:    req.Login,
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: req.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UserDataResponse{
+		Id:             result.Id.String(),
+		Login:          result.Login,
+		Name:           result.Name,
+		Email:          result.Email,
+		AvatarPhotoUrl: "url", // todo add
+	}, nil
+}
+
+func (s *UserServer) GetUserByLoginAndPassword(ctx context.Context, req *pb.GetUserByLoginAndPasswordRequest) (*pb.UserDataResponse, error) {
+	log.Printf("create user: received: %s", req.Login)
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	result, err := s.UserUsecase.GetUserByLoginAndPassword(ctx, usecases.GetUserByLoginAndPasswordRequest{
+		Login:    req.Login,
+		Password: req.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UserDataResponse{
+		Id:             result.Id.String(),
+		Login:          result.Login,
+		Name:           result.Name,
+		Email:          result.Email,
+		AvatarPhotoUrl: "url", // todo add
+	}, nil
 }
 
 func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UserDataResponse, error) {
@@ -28,8 +66,9 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	id, _ := uuid.NewUUID()
 	result, err := s.UserUsecase.UpdateUser(ctx, usecases.UpdateUserRequest{
-		Id:    req.Id,
+		Id:    id.String(),
 		Login: req.Login,
 		Name:  req.Name,
 		Email: req.Email,
@@ -39,7 +78,7 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 	}
 
 	return &pb.UserDataResponse{
-		Id:             result.UserID,
+		Id:             result.Id.String(),
 		Login:          result.Login,
 		Name:           result.Name,
 		Email:          result.Email,
@@ -54,7 +93,7 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginRequest{
+	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginAndPasswordRequest{
 		Login: req.Login,
 	})
 	if err != nil {
@@ -62,7 +101,7 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 	}
 
 	return &pb.UserDataResponse{
-		Id:             result.UserID,
+		Id:             result.Id.String(),
 		Login:          result.Login,
 		Name:           result.Name,
 		Email:          result.Email,
@@ -85,7 +124,7 @@ func (s *UserServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsR
 	return &pb.GetUserFriendsResponse{
 		Friends: []*pb.Friend{
 			{
-				UserId: result.Friends[0].UserID,
+				UserId: result.Friends[0].Id.String(),
 				Login:  result.Friends[0].Login,
 				Name:   result.Friends[0].Name,
 				Email:  result.Friends[0].Email,

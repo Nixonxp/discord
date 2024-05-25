@@ -6,8 +6,10 @@ import (
 )
 
 type UsecaseInterface interface {
+	CreateUser(ctx context.Context, req CreateUserRequest) (*models.User, error)
 	UpdateUser(ctx context.Context, req UpdateUserRequest) (*models.User, error)
-	GetUserByLogin(ctx context.Context, req GetUserByLoginRequest) (*models.User, error)
+	GetUserByLoginAndPassword(ctx context.Context, req GetUserByLoginAndPasswordRequest) (*models.User, error)
+	GetUserByLogin(ctx context.Context, req GetUserByLoginAndPasswordRequest) (*models.User, error)
 	GetUserFriends(ctx context.Context, req GetUserFriendsRequest) (*models.UserFriendsInfo, error)
 	AddToFriendByUserId(ctx context.Context, req AddToFriendByUserIdRequest) (*models.ActionInfo, error)
 	AcceptFriendInvite(ctx context.Context, req AcceptFriendInviteRequest) (*models.ActionInfo, error)
@@ -15,5 +17,7 @@ type UsecaseInterface interface {
 }
 
 type UsersStorage interface {
-	UpdateUser(_ context.Context, user *models.User) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) error
+	UpdateUser(ctx context.Context, user *models.User) error
+	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
 }

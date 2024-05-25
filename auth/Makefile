@@ -76,7 +76,18 @@ vendor:	.vendor-reset .vendor-googleapis .vendor-google-protobuf .vendor-protova
 	rm -rf $(VENDOR_PROTO_PATH)/grpc-gateway
 
 # генерация .go файлов с помощью protoc
-.protoc-generate:
+.protoc-generate: .proto-gen-user .proto-gen-auth
+
+.proto-gen-user:
+	$(PROTOC) -I $(VENDOR_PROTO_PATH) --proto_path=$(CURDIR)  \
+		-I $(CURDIR)/internal/app/api \
+    	--go_out $(PKG_PROTO_PATH)  --go_opt paths=import \
+    	--go-grpc_out $(PKG_PROTO_PATH) --go-grpc_opt paths=import \
+    	--grpc-gateway_out $(PKG_PROTO_PATH) \
+        --grpc-gateway_opt paths=import \
+    	$(CURDIR)/internal/app/api/user/*.proto
+
+.proto-gen-auth:
 	mkdir -p $(PKG_PROTO_PATH)
 	$(PROTOC) -I $(VENDOR_PROTO_PATH) --proto_path=$(CURDIR) \
 	--go_out=$(PKG_PROTO_PATH) --go_opt paths=source_relative \

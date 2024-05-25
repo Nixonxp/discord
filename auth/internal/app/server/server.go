@@ -13,8 +13,11 @@ import (
 
 // Config - server config
 type Config struct {
-	ChainUnaryInterceptors []grpc.UnaryServerInterceptor
-	UnaryInterceptors      []grpc.UnaryServerInterceptor
+	ChainUnaryInterceptors  []grpc.UnaryServerInterceptor
+	UnaryInterceptors       []grpc.UnaryServerInterceptor
+	UnaryClientInterceptors []grpc.UnaryClientInterceptor
+
+	UserServiceUrl string
 }
 
 // Deps - server deps

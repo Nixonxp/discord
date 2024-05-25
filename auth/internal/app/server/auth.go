@@ -6,7 +6,6 @@ import (
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/auth/pkg/grpc_utils"
 	"log"
-	"math/rand/v2"
 )
 
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
@@ -33,18 +32,6 @@ func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		Name:   user.Name,
 		Email:  user.Email,
 	}, nil
-}
-
-// isServiceOk в зависимости от входящего значения вернет false, например
-// передано 5, тогда (100 / 5 = 20) 20% вероятностью вернется false, для теста сервиса
-func isServiceOk(probability int) bool {
-	randNumber := rand.IntN(probability-1) + 1
-
-	if randNumber == 1 {
-		return false
-	}
-
-	return true
 }
 
 func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {

@@ -4,6 +4,9 @@ package github.com.Nixonxp.discord.user.api.v1;
 option go_package = "github.com/Nixonxp/discord/user/pkg/api/v1;user";
 
 service UserService {
+  rpc CreateUser(CreateUserRequest) returns (UserDataResponse) {}
+  rpc GetUserByLoginAndPassword(GetUserByLoginAndPasswordRequest) returns (UserDataResponse) {}
+
   rpc UpdateUser(UpdateUserRequest) returns (UserDataResponse) {}
   rpc GetUserByLogin(GetUserByLoginRequest) returns (UserDataResponse) {}
   rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse) {}
@@ -12,8 +15,15 @@ service UserService {
   rpc DeclineFriendInvite(DeclineFriendInviteRequest) returns (ActionResponse) {}
 }
 
+message CreateUserRequest {
+  string login = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+}
+
 message UpdateUserRequest {
-  uint64 id = 1;
+  string id = 1;
   string login = 2;
   string name = 3;
   string email = 4;
@@ -22,7 +32,7 @@ message UpdateUserRequest {
 }
 
 message UserDataResponse {
-  uint64 id = 1;
+  string id = 1;
   string login = 2;
   string name = 3;
   string email = 4;
@@ -31,6 +41,11 @@ message UserDataResponse {
 
 message GetUserByLoginRequest {
   string login = 1;
+}
+
+message GetUserByLoginAndPasswordRequest {
+  string login = 1;
+  string password = 2;
 }
 
 message ErrorMessage {
@@ -45,7 +60,7 @@ message GetUserFriendsResponse {
 }
 
 message Friend {
-  uint64 userId = 1;
+  string userId = 1;
   string login = 2;
   string name = 3;
   string email = 4;

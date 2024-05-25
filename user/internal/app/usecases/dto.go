@@ -1,15 +1,23 @@
 package usecases
 
-type UpdateUserRequest struct {
-	Id       uint64
+type CreateUserRequest struct {
 	Login    string
 	Name     string
 	Email    string
 	Password string
 }
 
-type GetUserByLoginRequest struct {
-	Login string
+type UpdateUserRequest struct {
+	Id       string
+	Login    string
+	Name     string
+	Email    string
+	Password string
+}
+
+type GetUserByLoginAndPasswordRequest struct {
+	Login    string
+	Password string
 }
 
 type GetUserFriendsRequest struct {

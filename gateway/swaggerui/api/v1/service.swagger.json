@@ -1393,7 +1393,7 @@
         "name": {
           "type": "string"
         },
-        "email": {
+        "token": {
           "type": "string"
         }
       }
