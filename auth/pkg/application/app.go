@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/labstack/echo/v4"
@@ -13,6 +14,7 @@ import (
 	"math/rand/v2"
 	"net"
 	"net/http"
+	"time"
 )
 
 // Config - server config
@@ -27,7 +29,7 @@ type App struct {
 	cfg *Config
 
 	httpListener      *echo.Echo
-	swaggerUIRouter   *mux.Router
+	swaggerUISrv      *http.Server
 	gatewayHttpServer *http.Server
 }
 
@@ -64,17 +66,22 @@ func NewApp(cfg *Config) (App, error) {
 		})
 	}
 
-	var router *mux.Router
+	var uiSrv *http.Server
 	if cfg.SwaggerUIHTTPPort != "" {
-		router = mux.NewRouter().StrictSlash(true)
+		router := mux.NewRouter().StrictSlash(true)
 		sh := http.StripPrefix("/swaggerui/", http.FileServer(http.Dir("./swaggerui/")))
 		router.PathPrefix("/swaggerui/").Handler(sh)
+
+		uiSrv = &http.Server{
+			Addr:    cfg.SwaggerUIHTTPPort,
+			Handler: router,
+		}
 	}
 
 	return App{
-		cfg:             cfg,
-		httpListener:    e,
-		swaggerUIRouter: router,
+		cfg:          cfg,
+		httpListener: e,
+		swaggerUISrv: uiSrv,
 	}, nil
 }
 
@@ -95,10 +102,18 @@ func (a *App) Run(ctx context.Context, srv *grpc.Server) error {
 				return fmt.Errorf("server: failed to listen: %v", err)
 			}
 
-			log.Println("start serve", lis.Addr())
-			if err := srv.Serve(lis); err != nil {
-				return fmt.Errorf("server: serve grpc: %v", err)
-			}
+			log.Println("start serve grpc server", lis.Addr())
+
+			go func() {
+				if err := srv.Serve(lis); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("server: serve grpc: %v", err)
+				}
+			}()
+
+			<-ctx.Done()
+			srv.GracefulStop()
+			log.Println("grpc server is stopped")
+
 			return nil
 		})
 	}
@@ -106,23 +121,38 @@ func (a *App) Run(ctx context.Context, srv *grpc.Server) error {
 	if a.cfg.HTTPPort != "" {
 		group.Go(func() error {
 			log.Println("start http server", a.cfg.HTTPPort)
-			err := a.httpListener.Start(a.cfg.HTTPPort)
-			if err != nil {
-				return fmt.Errorf("server: serve http: %v", err)
-			}
 
-			return nil
+			go func() {
+				err := a.httpListener.Start(a.cfg.HTTPPort)
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("server: serve http: %v", err)
+				}
+			}()
+
+			<-ctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+
+			return a.httpListener.Shutdown(shutdownCtx)
 		})
 	}
 
 	if a.cfg.SwaggerUIHTTPPort != "" {
 		group.Go(func() error {
 			log.Println("start swagger UI", a.cfg.SwaggerUIHTTPPort)
-			err := http.ListenAndServe(a.cfg.SwaggerUIHTTPPort, a.swaggerUIRouter)
-			if err != nil {
-				return fmt.Errorf("server: serve swagger UI: %v", err)
-			}
-			return nil
+
+			go func() {
+				err := a.swaggerUISrv.ListenAndServe()
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("server: serve swagger UI: %v", err)
+				}
+			}()
+
+			<-ctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+
+			return a.swaggerUISrv.Shutdown(shutdownCtx)
 		})
 	}
 
@@ -134,10 +164,17 @@ func (a *App) Run(ctx context.Context, srv *grpc.Server) error {
 				return fmt.Errorf("server: failed to listen: %v", err)
 			}
 
-			if err := a.gatewayHttpServer.Serve(lis); err != nil {
-				return fmt.Errorf("server: serve grpc gateway: %v", err)
-			}
-			return nil
+			go func() {
+				if err := a.gatewayHttpServer.Serve(lis); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("server: serve grpc gateway: %v", err)
+				}
+			}()
+
+			<-ctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+
+			return a.gatewayHttpServer.Shutdown(shutdownCtx)
 		})
 	}
 

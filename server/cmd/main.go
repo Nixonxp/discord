@@ -13,12 +13,20 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"log"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	resourcesShutdownCtx, resourcesShutdownCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
 		GRPCPort: ":8080",
@@ -44,7 +52,7 @@ func main() {
 		},
 	}
 
-	srv, err := server.NewServerServer(ctx, server.Deps{
+	srv, err := server.NewServerServer(resourcesShutdownCtx, server.Deps{
 		ServerUsecase: serverUsecase,
 	})
 	if err != nil {
@@ -62,4 +70,11 @@ func main() {
 	if err = app.Run(ctx, grpcServer); err != nil {
 		log.Fatalf("run: %v", err)
 	}
+
+	log.Print("servers is stopped")
+	resourcesShutdownCtxCancel()
+	log.Print("wait shutdown resources")
+	time.Sleep(time.Second * 5)
+
+	defer log.Print("app is stopped")
 }

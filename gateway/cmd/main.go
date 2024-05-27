@@ -14,18 +14,26 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/mercari/go-circuitbreaker"
 	ratelimit "github.com/tommy-sho/rate-limiter-grpc-go"
-	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
-var digContainer *dig.Container
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
 
-func ProvideConfig() (*application.Config, *server.Config) {
+	resourcesShutdownCtx, resourcesShutdownCtxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer resourcesShutdownCtxCancel()
+
 	config := application.Config{
 		GRPCGatewayPort:   ":8080",
 		SwaggerUIHTTPPort: ":8081",
@@ -52,7 +60,7 @@ func ProvideConfig() (*application.Config, *server.Config) {
 		}),
 	)
 
-	serverConfig := server.Config{
+	srvCfg := server.Config{
 		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
 			grpcretry.UnaryClientInterceptor(retryOpts...),
 			middleware.UnaryCircuitBreakerClientInterceptor(
@@ -65,12 +73,8 @@ func ProvideConfig() (*application.Config, *server.Config) {
 		},
 	}
 
-	return &config, &serverConfig
-}
-
-func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayService {
 	// grpc connection to auth service
-	authConn, err := grpc.DialContext(context.Background(),
+	authConn, err := grpc.DialContext(resourcesShutdownCtx,
 		"auth:8080", grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
@@ -82,7 +86,7 @@ func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayServic
 	}
 
 	// grpc connection to user service
-	userConn, err := grpc.DialContext(context.Background(),
+	userConn, err := grpc.DialContext(resourcesShutdownCtx,
 		"user:8080", grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
@@ -94,7 +98,7 @@ func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayServic
 	}
 
 	// grpc connection to server service
-	serverConn, err := grpc.DialContext(context.Background(),
+	serverConn, err := grpc.DialContext(resourcesShutdownCtx,
 		"server:8080",
 		grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -107,7 +111,7 @@ func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayServic
 	}
 
 	// grpc connection to channel service
-	channelConn, err := grpc.DialContext(context.Background(),
+	channelConn, err := grpc.DialContext(resourcesShutdownCtx,
 		"channel:8080", grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
@@ -119,7 +123,7 @@ func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayServic
 	}
 
 	// grpc connection to chat service
-	chatConn, err := grpc.DialContext(context.Background(),
+	chatConn, err := grpc.DialContext(resourcesShutdownCtx,
 		"chat:8080",
 		grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
@@ -139,54 +143,35 @@ func ProvideGatewayService(srvCfg *server.Config) *services.DiscordGatewayServic
 		ChatConn:    chatConn,
 	})
 
-	return discordGatewayService
-}
-
-func ProvideServer(service *services.DiscordGatewayService) *http.Server {
-	srv, err := server.NewDiscordGatewayServiceServer(context.Background(), server.Deps{
-		DiscordGatewayService: service,
+	srv, err := server.NewDiscordGatewayServiceServer(resourcesShutdownCtx, server.Deps{
+		DiscordGatewayService: discordGatewayService,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
 	mux := runtime.NewServeMux()
-	if err := pb.RegisterGatewayServiceHandlerServer(context.Background(), mux, srv); err != nil {
+	if err := pb.RegisterGatewayServiceHandlerServer(resourcesShutdownCtx, mux, srv); err != nil {
 		log.Fatalf("server: failed to register handler: %v", err)
 	}
 
 	httpServer := &http.Server{Handler: middleware.AllowCORS(mux)}
 
-	return httpServer
-}
-
-func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	digContainer = dig.New()
-	digContainer.Provide(ProvideConfig)
-	digContainer.Provide(ProvideGatewayService)
-	digContainer.Provide(ProvideServer)
-
-	applicationRun := func(
-		cfg *application.Config,
-		srv *http.Server,
-	) {
-		app, err := application.NewApp(cfg)
-		if err != nil {
-			log.Fatalf("failed to create app: %v", err)
-		}
-
-		app.AddGatewayServer(srv)
-
-		if err = app.Run(ctx, nil); err != nil {
-			log.Fatalf("run: %v", err)
-		}
+	app, err := application.NewApp(&config)
+	if err != nil {
+		log.Fatalf("failed to create app: %v", err)
 	}
 
-	if err := digContainer.Invoke(applicationRun); err != nil {
+	app.AddGatewayServer(httpServer)
+
+	if err = app.Run(ctx, nil); err != nil {
 		log.Fatalf("run: %v", err)
 	}
+
+	log.Print("servers is stopped")
+	resourcesShutdownCtxCancel()
+	log.Print("wait shutdown grpc clients")
+	time.Sleep(time.Second * 5)
+
+	defer log.Print("app is stopped")
 }

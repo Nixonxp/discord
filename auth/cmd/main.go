@@ -18,13 +18,17 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"log"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
 
 	config := application.Config{
 		GRPCPort: ":8080",
@@ -95,4 +99,8 @@ func main() {
 	if err = app.Run(ctx, grpcServer); err != nil {
 		log.Fatalf("run: %v", err)
 	}
+
+	log.Print("servers is stopped")
+
+	defer log.Print("app is stopped")
 }

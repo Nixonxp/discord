@@ -14,15 +14,22 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"log"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 const MongoCollectionMessages = "messages"
 
 func main() {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	resourcesShutdownCtx, resourcesShutdownCtxCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
 		GRPCPort: ":8080",
@@ -34,10 +41,7 @@ func main() {
 		log.Fatalf("failed to create app: %v", err)
 	}
 
-	ctxMongo, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	collection, err := mongoCollection.NewCollection(ctxMongo,
+	collection, err := mongoCollection.NewCollection(resourcesShutdownCtx,
 		MongoCollectionMessages,
 		&mongoCollection.Config{
 			MongoHost:     "mongodb-chat",
@@ -47,6 +51,10 @@ func main() {
 			MongoPassword: "example",
 		},
 	)
+	if err != nil {
+		log.Fatalf("failed to connect mongo: %v", err)
+	}
+
 	defer collection.DisconnectClient()
 
 	chatMongoRepo := repository.NewMongoChatRepository(collection)
@@ -54,7 +62,7 @@ func main() {
 		ChatRepo: chatMongoRepo,
 	})
 
-	srv, err := server.NewChatServer(ctx, server.Deps{
+	srv, err := server.NewChatServer(resourcesShutdownCtx, server.Deps{
 		ChatUsecase: chatUsecase,
 	})
 	if err != nil {
@@ -80,4 +88,11 @@ func main() {
 	if err = app.Run(ctx, grpcServer); err != nil {
 		log.Fatalf("run: %v", err)
 	}
+
+	log.Print("servers is stopped")
+	resourcesShutdownCtxCancel()
+	log.Print("wait shutdown resources")
+	time.Sleep(time.Second * 5)
+
+	defer log.Print("app is stopped")
 }
