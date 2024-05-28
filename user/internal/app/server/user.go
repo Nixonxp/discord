@@ -5,7 +5,6 @@ import (
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/user/pkg/grpc_utils"
-	"github.com/google/uuid"
 	"log"
 )
 
@@ -66,12 +65,12 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	id, _ := uuid.NewUUID()
 	result, err := s.UserUsecase.UpdateUser(ctx, usecases.UpdateUserRequest{
-		Id:    id.String(),
-		Login: req.Login,
-		Name:  req.Name,
-		Email: req.Email,
+		Id:             req.Id,
+		Login:          req.Login,
+		Name:           req.Name,
+		Email:          req.Email,
+		AvatarPhotoUrl: req.AvatarPhotoUrl,
 	})
 	if err != nil {
 		return nil, err
@@ -82,7 +81,7 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 		Login:          result.Login,
 		Name:           result.Name,
 		Email:          result.Email,
-		AvatarPhotoUrl: "url",
+		AvatarPhotoUrl: req.AvatarPhotoUrl,
 	}, nil
 }
 

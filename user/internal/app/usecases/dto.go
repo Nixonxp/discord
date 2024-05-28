@@ -8,11 +8,11 @@ type CreateUserRequest struct {
 }
 
 type UpdateUserRequest struct {
-	Id       string
-	Login    string
-	Name     string
-	Email    string
-	Password string
+	Id             string
+	Login          string
+	Name           string
+	Email          string
+	AvatarPhotoUrl string
 }
 
 type GetUserByLoginAndPasswordRequest struct {

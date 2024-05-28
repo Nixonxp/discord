@@ -48,23 +48,24 @@ func (r *PGUserRepository) CreateUser(ctx context.Context, user *models.User) er
 }
 
 func (r *PGUserRepository) UpdateUser(ctx context.Context, user *models.User) error {
-	// todo implement
-	/*row, err := newUserRowFromModelsUser(user)
+	query := sq.Update(userTable).
+		SetMap(map[string]any{
+			"login":            user.Login,
+			"name":             user.Name,
+			"email":            user.Email,
+			"avatar_photo_url": user.AvatarPhotoUrl,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		Where(sq.Eq{"id": user.Id.String()})
+
+	result, err := r.conn.Execx(ctx, query)
 	if err != nil {
-		return pkgerrors.Wrap("create error repo", err)
+		return pkgerrors.Wrap("update user exec error repo", err)
 	}
 
-	query := sq.Insert(userTable).
-		SetMap(row.ValuesMap()).
-		PlaceholderFormat(sq.Dollar)
-
-	if _, err = r.conn.Execx(ctx, query); err != nil {
-		var pgError *pgconn.PgError
-		if errors.As(err, &pgError) && pgError.Code == pgerrcode.UniqueViolation {
-			return pkgerrors.Wrap("create user exec unique error repo", models.ErrAlreadyExists)
-		}
-		return pkgerrors.Wrap("create user exec error repo", err)
-	}*/
+	if result.RowsAffected() == 0 {
+		return models.ErrNotFound
+	}
 
 	return nil
 }

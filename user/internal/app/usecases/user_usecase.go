@@ -51,23 +51,27 @@ func (u *UserUsecase) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 }
 
 func (u *UserUsecase) UpdateUser(ctx context.Context, req UpdateUserRequest) (*models.User, error) {
-	userID := models.UserID(uuid.New())
+	userID := models.UserID(uuid.MustParse(req.Id))
 	err := u.UserRepo.UpdateUser(ctx, &models.User{
-		Id:    userID,
-		Login: req.Login,
-		Name:  req.Name,
-		Email: req.Email,
+		Id:             userID,
+		Login:          req.Login,
+		Name:           req.Name,
+		Email:          req.Email,
+		AvatarPhotoUrl: req.AvatarPhotoUrl,
 	})
 	if err != nil {
-		return &models.User{}, err
+		if errors.Is(err, models.ErrNotFound) {
+			return nil, pkgerrors.Wrap("user for update not found", err)
+		}
+		return nil, err
 	}
 
 	user := &models.User{
-		Id:       userID,
-		Login:    req.Login,
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: req.Password,
+		Id:             userID,
+		Login:          req.Login,
+		Name:           req.Name,
+		Email:          req.Email,
+		AvatarPhotoUrl: req.AvatarPhotoUrl,
 	}
 
 	return user, nil

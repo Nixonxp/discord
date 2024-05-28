@@ -1210,8 +1210,7 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
@@ -1561,10 +1560,6 @@
           "type": "string",
           "example": "test@mail.com"
         },
-        "password": {
-          "type": "string",
-          "example": "password123"
-        },
         "avatar_photo_url": {
           "type": "string",
           "example": "url"
@@ -1574,7 +1569,6 @@
         "login",
         "name",
         "email",
-        "password",
         "avatar_photo_url"
       ]
     },
@@ -1582,8 +1576,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "string"
         },
         "login": {
           "type": "string"

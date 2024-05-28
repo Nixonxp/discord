@@ -117,7 +117,6 @@ func (s *DiscordGatewayService) UpdateUser(ctx context.Context, req *pb.UpdateUs
 		Login:          req.GetBody().GetLogin(),
 		Name:           req.GetBody().GetName(),
 		Email:          req.GetBody().GetEmail(),
-		Password:       req.GetBody().GetPassword(),
 		AvatarPhotoUrl: req.GetBody().GetAvatarPhotoUrl(),
 	}
 

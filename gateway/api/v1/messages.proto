@@ -82,8 +82,8 @@ message OauthLoginCallbackResponse {
 }
 
 message UpdateUserRequest {
-  uint64 id = 1 [json_name = "id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string id = 1 [json_name = "id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
   UpdateUserBody body = 2;
 }
@@ -98,16 +98,13 @@ message UpdateUserBody {
   string email = 3 [json_name = "email", (buf.validate.field).required = true, (buf.validate.field).string.email=true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"test@mail.com\""
   }];
-  string password = 4 [json_name = "password", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 8, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "\"password123\""
-  }];
   string avatar_photo_url = 5 [json_name = "avatar_photo_url", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"url\""
   }];
 }
 
 message UserDataResponse {
-  uint64 id = 1 [json_name = "id"];
+  string id = 1 [json_name = "id"];
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string email = 4 [json_name = "email"];

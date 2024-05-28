@@ -6,20 +6,22 @@ import (
 )
 
 type userRow struct {
-	ID       uuid.UUID `db:"id"`
-	Login    string    `db:"login"`
-	Name     string    `db:"name"`
-	Email    string    `db:"email"`
-	Password string    `db:"password"`
+	ID             uuid.UUID `db:"id"`
+	Login          string    `db:"login"`
+	Name           string    `db:"name"`
+	Email          string    `db:"email"`
+	Password       string    `db:"password"`
+	AvatarPhotoUrl string    `db:"avatar_photo_url"`
 }
 
 func (r *userRow) ValuesMap() map[string]any {
 	return map[string]any{
-		"id":       r.ID,
-		"login":    r.Login,
-		"name":     r.Name,
-		"email":    r.Email,
-		"password": r.Password,
+		"id":               r.ID,
+		"login":            r.Login,
+		"name":             r.Name,
+		"email":            r.Email,
+		"password":         r.Password,
+		"avatar_photo_url": r.AvatarPhotoUrl,
 	}
 }
 
@@ -30,6 +32,7 @@ func columns() []string {
 		"name",
 		"email",
 		"password",
+		"avatar_photo_url",
 	}
 }
 
