@@ -18,10 +18,6 @@ type User struct {
 	AvatarPhotoUrl string
 }
 
-type UserFriendsInfo struct {
-	Friends []*User
-}
-
 type ActionInfo struct {
 	Success bool
 }

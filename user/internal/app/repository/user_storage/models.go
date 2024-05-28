@@ -11,7 +11,7 @@ type userRow struct {
 	Name           string    `db:"name"`
 	Email          string    `db:"email"`
 	Password       string    `db:"password"`
-	AvatarPhotoUrl string    `db:"avatar_photo_url"`
+	AvatarPhotoUrl *string   `db:"avatar_photo_url"`
 }
 
 func (r *userRow) ValuesMap() map[string]any {
@@ -49,20 +49,22 @@ func (r *userRow) Values(columns ...string) []any {
 
 func newUserRowFromModelsUser(user *models.User) (*userRow, error) {
 	return &userRow{
-		ID:       uuid.UUID(user.Id),
-		Login:    user.Login,
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
+		ID:             uuid.UUID(user.Id),
+		Login:          user.Login,
+		Name:           user.Name,
+		Email:          user.Email,
+		Password:       user.Password,
+		AvatarPhotoUrl: &user.AvatarPhotoUrl,
 	}, nil
 }
 
 func newUserModelsFromUserRow(userRow *userRow) (*models.User, error) {
 	return &models.User{
-		Id:       models.UserID(userRow.ID),
-		Login:    userRow.Login,
-		Name:     userRow.Name,
-		Email:    userRow.Email,
-		Password: userRow.Password,
+		Id:             models.UserID(userRow.ID),
+		Login:          userRow.Login,
+		Name:           userRow.Name,
+		Email:          userRow.Email,
+		Password:       userRow.Password,
+		AvatarPhotoUrl: *userRow.AvatarPhotoUrl,
 	}, nil
 }

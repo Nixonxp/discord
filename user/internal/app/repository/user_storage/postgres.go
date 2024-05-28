@@ -93,3 +93,25 @@ func (r *PGUserRepository) GetUserByLogin(ctx context.Context, login string) (*m
 
 	return resultUser, nil
 }
+
+func (r *PGUserRepository) GetUserById(ctx context.Context, userId models.UserID) (*models.User, error) {
+	query := sq.Select(columns()...).
+		From(userTable).
+		Where(sq.Eq{"id": userId.String()}).
+		PlaceholderFormat(sq.Dollar)
+
+	user := &userRow{}
+	if err := r.conn.Getx(ctx, user, query); err != nil {
+		if err.Error() == ErrNoRows.Error() {
+			return nil, pkgerrors.Wrap("get user not found error repo", models.ErrNotFound)
+		}
+		return nil, pkgerrors.Wrap("get user exec error repo", err)
+	}
+
+	resultUser, err := newUserModelsFromUserRow(user)
+	if err != nil {
+		return nil, pkgerrors.Wrap("error map row to user model", err)
+	}
+
+	return resultUser, nil
+}

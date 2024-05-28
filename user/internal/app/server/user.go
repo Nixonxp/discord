@@ -92,7 +92,7 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginAndPasswordRequest{
+	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginRequest{
 		Login: req.Login,
 	})
 	if err != nil {
@@ -104,7 +104,7 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 		Login:          result.Login,
 		Name:           result.Name,
 		Email:          result.Email,
-		AvatarPhotoUrl: "url",
+		AvatarPhotoUrl: result.AvatarPhotoUrl,
 	}, nil
 }
 
@@ -129,6 +129,35 @@ func (s *UserServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsR
 				Email:  result.Friends[0].Email,
 			},
 		},
+	}, nil
+}
+
+func (s *UserServer) GetUserInvites(ctx context.Context, req *pb.GetUserInvitesRequest) (*pb.GetUserInvitesResponse, error) {
+	log.Printf("get user friends received")
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	result, err := s.UserUsecase.GetUserInvites(ctx, usecases.GetUserInvitesRequest{
+		UserId: "4aee4258-1cdd-11ef-b2b5-4612de44ab9f", // todo from auth data,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	pbInvites := make([]*pb.FriendInvite, len(result.Invites))
+	for i, invite := range result.Invites {
+		pbInvites[i] = &pb.FriendInvite{
+			InviteId: invite.InviteId.String(),
+			OwnerId:  invite.OwnerId.String(),
+			UserId:   invite.UserId.String(),
+			Status:   invite.Status,
+		}
+	}
+
+	return &pb.GetUserInvitesResponse{
+		Invites: pbInvites,
 	}, nil
 }
 
@@ -171,7 +200,7 @@ func (s *UserServer) AcceptFriendInvite(ctx context.Context, req *pb.AcceptFrien
 }
 
 func (s *UserServer) DeclineFriendInvite(ctx context.Context, req *pb.DeclineFriendInviteRequest) (*pb.ActionResponse, error) {
-	log.Printf("accepdecline user to friends received: %d", req.GetInviteId())
+	log.Printf("decline user to friends received: %s", req.GetInviteId())
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)

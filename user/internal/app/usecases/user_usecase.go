@@ -10,7 +10,8 @@ import (
 )
 
 type Deps struct {
-	UserRepo UsersStorage
+	UserRepo          UsersStorage
+	FriendInvitesRepo FriendInvitesStorage
 }
 
 type UserUsecase struct {
@@ -95,15 +96,10 @@ func (u *UserUsecase) GetUserByLoginAndPassword(ctx context.Context, req GetUser
 	return user, nil
 }
 
-func (u *UserUsecase) GetUserByLogin(ctx context.Context, req GetUserByLoginAndPasswordRequest) (*models.User, error) {
+func (u *UserUsecase) GetUserByLogin(ctx context.Context, req GetUserByLoginRequest) (*models.User, error) {
 	user, err := u.UserRepo.GetUserByLogin(ctx, req.Login)
 	if err != nil {
-		return &models.User{}, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-	if err != nil {
-		return &models.User{}, models.ErrCredInvalid
+		return nil, err
 	}
 
 	return user, nil
@@ -124,11 +120,38 @@ func (u *UserUsecase) GetUserFriends(_ context.Context, req GetUserFriendsReques
 	}, nil
 }
 
-func (u *UserUsecase) AddToFriendByUserId(_ context.Context, _ AddToFriendByUserIdRequest) (*models.ActionInfo, error) {
-	// todo add repo
+func (u *UserUsecase) AddToFriendByUserId(ctx context.Context, req AddToFriendByUserIdRequest) (*models.ActionInfo, error) {
+	userID := models.UserID(uuid.MustParse(req.UserId))
+	_, err := u.UserRepo.GetUserById(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	inviteId, _ := uuid.NewUUID()
+	err = u.FriendInvitesRepo.CreateInvite(ctx, &models.FriendInvite{
+		InviteId: models.InviteId(inviteId),
+		OwnerId:  models.UserID(uuid.MustParse("e72cebc9-957a-4093-b6b4-5cd820efa9e1")), // todo from auth data
+		UserId:   userID,
+		Status:   models.PendingStatus,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.ActionInfo{
 		Success: true,
 	}, nil
+}
+
+func (u *UserUsecase) GetUserInvites(ctx context.Context, req GetUserInvitesRequest) (*models.UserInvitesInfo, error) {
+	userID := models.UserID(uuid.MustParse(req.UserId))
+
+	invites, err := u.FriendInvitesRepo.GetInvitesByUserId(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return invites, nil
 }
 
 func (u *UserUsecase) AcceptFriendInvite(_ context.Context, _ AcceptFriendInviteRequest) (*models.ActionInfo, error) {
@@ -138,8 +161,14 @@ func (u *UserUsecase) AcceptFriendInvite(_ context.Context, _ AcceptFriendInvite
 	}, nil
 }
 
-func (u *UserUsecase) DeclineFriendInvite(_ context.Context, _ DeclineFriendInviteRequest) (*models.ActionInfo, error) {
-	// todo add repo
+func (u *UserUsecase) DeclineFriendInvite(ctx context.Context, req DeclineFriendInviteRequest) (*models.ActionInfo, error) {
+	inviteID := models.InviteId(uuid.MustParse(req.InviteId))
+
+	err := u.FriendInvitesRepo.DeclineInvite(ctx, inviteID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.ActionInfo{
 		Success: true,
 	}, nil

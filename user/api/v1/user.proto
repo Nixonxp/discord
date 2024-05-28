@@ -10,6 +10,7 @@ service UserService {
   rpc UpdateUser(UpdateUserRequest) returns (UserDataResponse) {}
   rpc GetUserByLogin(GetUserByLoginRequest) returns (UserDataResponse) {}
   rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse) {}
+  rpc GetUserInvites(GetUserInvitesRequest) returns (GetUserInvitesResponse) {}
   rpc AddToFriendByUserId(AddToFriendByUserIdRequest) returns (ActionResponse) {}
   rpc AcceptFriendInvite(AcceptFriendInviteRequest) returns (ActionResponse) {}
   rpc DeclineFriendInvite(DeclineFriendInviteRequest) returns (ActionResponse) {}
@@ -66,17 +67,31 @@ message Friend {
 }
 
 message AddToFriendByUserIdRequest {
-  uint64 user_id = 1;
+  string user_id = 1;
 }
 
 message AcceptFriendInviteRequest {
-  uint64 invite_id = 1;
+  string invite_id = 1;
 }
 
 message DeclineFriendInviteRequest {
-  uint64 invite_id = 1;
+  string invite_id = 1;
 }
 
 message ActionResponse {
   bool success = 1;
+}
+
+message GetUserInvitesRequest {
+}
+
+message GetUserInvitesResponse {
+  repeated FriendInvite invites = 1;
+}
+
+message FriendInvite {
+  string inviteId = 1;
+  string ownerId = 2;
+  string userId = 3;
+  string status = 4;
 }

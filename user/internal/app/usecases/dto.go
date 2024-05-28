@@ -20,17 +20,25 @@ type GetUserByLoginAndPasswordRequest struct {
 	Password string
 }
 
+type GetUserByLoginRequest struct {
+	Login string
+}
+
 type GetUserFriendsRequest struct {
 }
 
+type GetUserInvitesRequest struct {
+	UserId string
+}
+
 type AddToFriendByUserIdRequest struct {
-	UserId uint64
+	UserId string
 }
 
 type AcceptFriendInviteRequest struct {
-	InviteId uint64
+	InviteId string
 }
 
 type DeclineFriendInviteRequest struct {
-	InviteId uint64
+	InviteId string
 }

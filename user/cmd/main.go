@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	repositoryFriendInvte "github.com/Nixonxp/discord/user/internal/app/repository/friend_invites_storage"
 	repository "github.com/Nixonxp/discord/user/internal/app/repository/user_storage"
 	"github.com/Nixonxp/discord/user/internal/app/server"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
@@ -55,9 +56,11 @@ func main() {
 	}
 
 	userRepo := repository.NewUserPostgresqlRepository(pool)
+	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(pool)
 
 	userUsecase := usecases.NewUserUsecase(usecases.Deps{
-		UserRepo: userRepo,
+		UserRepo:          userRepo,
+		FriendInvitesRepo: friendInvitesRepo,
 	})
 
 	globalLimiter := rate_limiter.NewRateLimiter(1000)
