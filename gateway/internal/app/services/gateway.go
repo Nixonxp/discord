@@ -8,6 +8,7 @@ import (
 	pb_server "github.com/Nixonxp/discord/gateway/pkg/api/server"
 	pb_user "github.com/Nixonxp/discord/gateway/pkg/api/user"
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -41,6 +42,9 @@ func (s *DiscordGatewayService) Register(ctx context.Context, req *pb.RegisterRe
 		},
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.Register")
+	defer span.Finish()
+
 	registerResponse, err := authClient.Register(ctx, &registerReq)
 	if err != nil {
 		return nil, err
@@ -61,6 +65,9 @@ func (s *DiscordGatewayService) Login(ctx context.Context, req *pb.LoginRequest)
 		Password: req.GetPassword(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.Login")
+	defer span.Finish()
+
 	loginResponse, err := authClient.Login(ctx, &loginReq)
 	if err != nil {
 		log.Println(err)
@@ -79,6 +86,9 @@ func (s *DiscordGatewayService) OauthLogin(ctx context.Context, _ *pb.OauthLogin
 	authClient := pb_auth.NewAuthServiceClient(s.AuthConn)
 	loginReq := pb_auth.OauthLoginRequest{}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.OauthLogin")
+	defer span.Finish()
+
 	loginResponse, err := authClient.OauthLogin(ctx, &loginReq)
 	if err != nil {
 		log.Println(err)
@@ -95,6 +105,9 @@ func (s *DiscordGatewayService) OauthLoginCallback(ctx context.Context, req *pb.
 	loginReq := pb_auth.OauthLoginCallbackRequest{
 		Code: req.GetCode(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.OauthLoginCallback")
+	defer span.Finish()
 
 	loginResponse, err := authClient.OauthLoginCallback(ctx, &loginReq)
 	if err != nil {
@@ -120,6 +133,9 @@ func (s *DiscordGatewayService) UpdateUser(ctx context.Context, req *pb.UpdateUs
 		AvatarPhotoUrl: req.GetBody().GetAvatarPhotoUrl(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.UpdateUser")
+	defer span.Finish()
+
 	response, err := userClient.UpdateUser(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -140,6 +156,9 @@ func (s *DiscordGatewayService) GetUserByLogin(ctx context.Context, req *pb.GetU
 	request := pb_user.GetUserByLoginRequest{
 		Login: req.GetLogin(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserByLogin")
+	defer span.Finish()
 
 	response, err := userClient.GetUserByLogin(ctx, &request)
 	if err != nil {
@@ -166,6 +185,9 @@ func (s *DiscordGatewayService) GetUserFriends(ctx context.Context, req *pb.GetU
 		return nil, err
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserFriends")
+	defer span.Finish()
+
 	res := make([]*pb.Friend, len(response.GetFriends()))
 	for i, v := range response.GetFriends() {
 		res[i] = &pb.Friend{
@@ -187,6 +209,9 @@ func (s *DiscordGatewayService) AddToFriendByUserId(ctx context.Context, req *pb
 		UserId: req.GetUserId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.AddToFriendByUserId")
+	defer span.Finish()
+
 	response, err := userClient.AddToFriendByUserId(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -203,6 +228,9 @@ func (s *DiscordGatewayService) AcceptFriendInvite(ctx context.Context, req *pb.
 	request := pb_user.AcceptFriendInviteRequest{
 		InviteId: req.GetInviteId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.AcceptFriendInvite")
+	defer span.Finish()
 
 	response, err := userClient.AcceptFriendInvite(ctx, &request)
 	if err != nil {
@@ -221,6 +249,9 @@ func (s *DiscordGatewayService) DeclineFriendInvite(ctx context.Context, req *pb
 		InviteId: req.GetInviteId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.DeclineFriendInvite")
+	defer span.Finish()
+
 	response, err := userClient.DeclineFriendInvite(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -237,6 +268,9 @@ func (s *DiscordGatewayService) CreateServer(ctx context.Context, req *pb.Create
 	request := pb_server.CreateServerRequest{
 		Name: req.GetName(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.CreateServer")
+	defer span.Finish()
 
 	response, err := serverClient.CreateServer(ctx, &request)
 	if err != nil {
@@ -256,6 +290,9 @@ func (s *DiscordGatewayService) SearchServer(ctx context.Context, req *pb.Search
 		Name: req.GetName(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.SearchServer")
+	defer span.Finish()
+
 	response, err := serverClient.SearchServer(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -274,6 +311,9 @@ func (s *DiscordGatewayService) SubscribeServer(ctx context.Context, req *pb.Sub
 		ServerId: req.GetServerId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.SubscribeServer")
+	defer span.Finish()
+
 	response, err := serverClient.SubscribeServer(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -291,6 +331,9 @@ func (s *DiscordGatewayService) UnsubscribeServer(ctx context.Context, req *pb.U
 		ServerId: req.GetServerId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.UnsubscribeServer")
+	defer span.Finish()
+
 	response, err := serverClient.UnsubscribeServer(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -307,6 +350,9 @@ func (s *DiscordGatewayService) SearchServerByUserId(ctx context.Context, req *p
 	request := pb_server.SearchServerByUserIdRequest{
 		UserId: req.GetUserId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.SearchServerByUserId")
+	defer span.Finish()
 
 	response, err := serverClient.SearchServerByUserId(ctx, &request)
 	if err != nil {
@@ -327,6 +373,9 @@ func (s *DiscordGatewayService) InviteUserToServer(ctx context.Context, req *pb.
 		ServerId: req.GetServerId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.InviteUserToServer")
+	defer span.Finish()
+
 	response, err := serverClient.InviteUserToServer(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -345,6 +394,9 @@ func (s *DiscordGatewayService) PublishMessageOnServer(ctx context.Context, req 
 		Text:     req.GetText(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.PublishMessageOnServer")
+	defer span.Finish()
+
 	response, err := serverClient.PublishMessageOnServer(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -361,6 +413,9 @@ func (s *DiscordGatewayService) GetMessagesFromServer(ctx context.Context, req *
 	request := pb_server.GetMessagesFromServerRequest{
 		ServerId: req.GetServerId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "server_service.GetMessagesFromServer")
+	defer span.Finish()
 
 	response, err := serverClient.GetMessagesFromServer(ctx, &request)
 	if err != nil {
@@ -388,6 +443,9 @@ func (s *DiscordGatewayService) AddChannel(ctx context.Context, req *pb.AddChann
 		Name: req.GetName(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "channel_service.AddChannel")
+	defer span.Finish()
+
 	response, err := channelClient.AddChannel(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -404,6 +462,9 @@ func (s *DiscordGatewayService) DeleteChannel(ctx context.Context, req *pb.Delet
 	request := pb_channel.DeleteChannelRequest{
 		ChannelId: req.GetChannelId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "channel_service.DeleteChannel")
+	defer span.Finish()
 
 	response, err := channelClient.DeleteChannel(ctx, &request)
 	if err != nil {
@@ -422,6 +483,9 @@ func (s *DiscordGatewayService) JoinChannel(ctx context.Context, req *pb.JoinCha
 		ChannelId: req.GetChannelId(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "channel_service.JoinChannel")
+	defer span.Finish()
+
 	response, err := channelClient.JoinChannel(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -438,6 +502,9 @@ func (s *DiscordGatewayService) LeaveChannel(ctx context.Context, req *pb.LeaveC
 	request := pb_channel.LeaveChannelRequest{
 		ChannelId: req.GetChannelId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "channel_service.LeaveChannel")
+	defer span.Finish()
 
 	response, err := channelClient.LeaveChannel(ctx, &request)
 	if err != nil {
@@ -457,6 +524,9 @@ func (s *DiscordGatewayService) SendUserPrivateMessage(ctx context.Context, req 
 		Text:   req.GetText(),
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "chat_service.SendUserPrivateMessage")
+	defer span.Finish()
+
 	response, err := chatClient.SendUserPrivateMessage(ctx, &request)
 	if err != nil {
 		log.Println(err)
@@ -473,6 +543,9 @@ func (s *DiscordGatewayService) GetUserPrivateMessages(ctx context.Context, req 
 	request := pb_chat.GetUserPrivateMessagesRequest{
 		UserId: req.GetUserId(),
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "chat_service.GetUserPrivateMessages")
+	defer span.Finish()
 
 	response, err := chatClient.GetUserPrivateMessages(ctx, &request)
 	if err != nil {

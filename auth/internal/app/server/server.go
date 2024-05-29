@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
+	log "github.com/Nixonxp/discord/auth/pkg/logger"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
@@ -23,6 +24,7 @@ type Config struct {
 // Deps - server deps
 type Deps struct {
 	AuthUsecase usecases.UsecaseInterface
+	Log         *log.Logger
 }
 
 type AuthServer struct {

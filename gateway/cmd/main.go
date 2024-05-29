@@ -8,16 +8,20 @@ import (
 	"github.com/Nixonxp/discord/gateway/internal/middleware"
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
 	"github.com/Nixonxp/discord/gateway/pkg/application"
+	logCfg "github.com/Nixonxp/discord/gateway/pkg/logger"
+	logger "github.com/Nixonxp/discord/gateway/pkg/logger"
+	jaeger_tracing "github.com/Nixonxp/discord/gateway/pkg/tracing"
 	"github.com/benbjohnson/clock"
 	"github.com/cenkalti/backoff/v3"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/mercari/go-circuitbreaker"
+	"github.com/opentracing/opentracing-go"
 	ratelimit "github.com/tommy-sho/rate-limiter-grpc-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -37,6 +41,15 @@ func main() {
 	config := application.Config{
 		GRPCGatewayPort:   ":8080",
 		SwaggerUIHTTPPort: ":8081",
+	}
+
+	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
+	if err != nil {
+		panic("error init logger")
+	}
+
+	if err := jaeger_tracing.Init("gateway service"); err != nil {
+		log.Fatal(ctx, err)
 	}
 
 	retryOpts := []grpcretry.CallOption{
@@ -63,6 +76,7 @@ func main() {
 	srvCfg := server.Config{
 		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
 			grpcretry.UnaryClientInterceptor(retryOpts...),
+			grpc_opentracing.OpenTracingClientInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
 			middleware.UnaryCircuitBreakerClientInterceptor(
 				cb,
 				func(ctx context.Context, method string, req interface{}) {
@@ -151,11 +165,14 @@ func main() {
 	}
 
 	mux := runtime.NewServeMux()
+
 	if err := pb.RegisterGatewayServiceHandlerServer(resourcesShutdownCtx, mux, srv); err != nil {
 		log.Fatalf("server: failed to register handler: %v", err)
 	}
 
-	httpServer := &http.Server{Handler: middleware.AllowCORS(mux)}
+	httpServer := &http.Server{
+		Handler: middleware.TracingWrapper(middleware.AllowCORS(mux)),
+	}
 
 	app, err := application.NewApp(&config)
 	if err != nil {

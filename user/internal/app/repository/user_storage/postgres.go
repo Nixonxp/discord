@@ -7,6 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Nixonxp/discord/user/internal/app/models"
 	pkgerrors "github.com/Nixonxp/discord/user/pkg/errors"
+	log "github.com/Nixonxp/discord/user/pkg/logger"
 	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -17,12 +18,14 @@ const userTable = "users"
 type PGUserRepository struct {
 	queryBuilder sq.StatementBuilderType
 	conn         *postgres.Connection
+	log          *log.Logger
 }
 
-func NewUserPostgresqlRepository(conn *postgres.Connection) *PGUserRepository {
+func NewUserPostgresqlRepository(conn *postgres.Connection, log *log.Logger) *PGUserRepository {
 	return &PGUserRepository{
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 		conn:         conn,
+		log:          log,
 	}
 }
 
@@ -60,7 +63,8 @@ func (r *PGUserRepository) UpdateUser(ctx context.Context, user *models.User) er
 
 	result, err := r.conn.Execx(ctx, query)
 	if err != nil {
-		return pkgerrors.Wrap("update user exec error repo", err)
+		r.ctxLog(ctx).WithError(err).WithField("user", user).Error("update user exec error repo")
+		return err
 	}
 
 	if result.RowsAffected() == 0 {
@@ -81,14 +85,18 @@ func (r *PGUserRepository) GetUserByLogin(ctx context.Context, login string) (*m
 	user := &userRow{}
 	if err := r.conn.Getx(ctx, user, query); err != nil {
 		if err.Error() == ErrNoRows.Error() {
-			return nil, pkgerrors.Wrap("get user not found error repo", models.ErrNotFound)
+			r.ctxLog(ctx).WithError(err).WithField("login", login).Error("user not found in repository")
+			return nil, pkgerrors.Wrap("user not found", models.ErrNotFound)
 		}
-		return nil, pkgerrors.Wrap("get user exec error repo", err)
+
+		r.ctxLog(ctx).WithError(err).WithField("login", login).Error("get user exec error repo")
+		return nil, err
 	}
 
 	resultUser, err := newUserModelsFromUserRow(user)
 	if err != nil {
-		return nil, pkgerrors.Wrap("error map row to user model", err)
+		r.ctxLog(ctx).WithError(err).WithField("login", login).Error("error map row to user model")
+		return nil, err
 	}
 
 	return resultUser, nil
@@ -103,9 +111,12 @@ func (r *PGUserRepository) GetUserById(ctx context.Context, userId models.UserID
 	user := &userRow{}
 	if err := r.conn.Getx(ctx, user, query); err != nil {
 		if err.Error() == ErrNoRows.Error() {
-			return nil, pkgerrors.Wrap("get user not found error repo", models.ErrNotFound)
+			r.ctxLog(ctx).WithError(err).WithField("userId", userId).Error("get user not found error repo")
+			return nil, models.ErrNotFound
 		}
-		return nil, pkgerrors.Wrap("get user exec error repo", err)
+
+		r.ctxLog(ctx).WithError(err).WithField("userId", userId).Error("get user exec error repo")
+		return nil, err
 	}
 
 	resultUser, err := newUserModelsFromUserRow(user)
@@ -114,4 +125,8 @@ func (r *PGUserRepository) GetUserById(ctx context.Context, userId models.UserID
 	}
 
 	return resultUser, nil
+}
+
+func (r *PGUserRepository) ctxLog(ctx context.Context) *log.Logger {
+	return r.log.WithContext(ctx)
 }

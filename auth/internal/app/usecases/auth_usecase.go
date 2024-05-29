@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"github.com/Nixonxp/discord/auth/internal/app/models"
+	log "github.com/Nixonxp/discord/auth/pkg/logger"
 	"github.com/google/uuid"
 )
 
@@ -10,6 +11,7 @@ type Deps struct {
 	// deprecated
 	UserRepo    UsersStorage
 	UserService UsecaseServiceInterface
+	Log         *log.Logger
 }
 
 type AuthUsecase struct {

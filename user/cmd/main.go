@@ -7,14 +7,19 @@ import (
 	"github.com/Nixonxp/discord/user/internal/app/server"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/user/internal/middleware/errors"
+	middleware_tracing "github.com/Nixonxp/discord/user/internal/middleware/tracing"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
 	"github.com/Nixonxp/discord/user/pkg/application"
+	logCfg "github.com/Nixonxp/discord/user/pkg/logger"
+	logger "github.com/Nixonxp/discord/user/pkg/logger"
 	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/Nixonxp/discord/user/pkg/rate_limiter"
+	jaeger_tracing "github.com/Nixonxp/discord/user/pkg/tracing"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
-	"log"
 	"os/signal"
 	"syscall"
 	"time"
@@ -39,6 +44,15 @@ func main() {
 		HTTPPort: ":8081",
 	}
 
+	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
+	if err != nil {
+		panic("error init logger")
+	}
+
+	if err := jaeger_tracing.Init("user service"); err != nil {
+		log.Fatal(ctx, err)
+	}
+
 	app, err := application.NewApp(&config)
 	if err != nil {
 		log.Fatalf("failed to create app: %v", err)
@@ -55,8 +69,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userRepo := repository.NewUserPostgresqlRepository(pool)
-	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(pool)
+	userRepo := repository.NewUserPostgresqlRepository(pool, log)
+	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(pool, log)
 
 	userUsecase := usecases.NewUserUsecase(usecases.Deps{
 		UserRepo:          userRepo,
@@ -66,14 +80,17 @@ func main() {
 	globalLimiter := rate_limiter.NewRateLimiter(1000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
-			middleware.ErrorsUnaryInterceptor(),
+			middleware.ErrorsUnaryInterceptor(log),
 			ratelimit.UnaryServerInterceptor(globalLimiter),
 			grpc_recovery.UnaryServerInterceptor(),
+			grpc_opentracing.OpenTracingServerInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
+			middleware_tracing.DebugOpenTracingUnaryServerInterceptor(true, true),
 		},
 	}
 
 	srv, err := server.NewUserServer(resourcesShutdownCtx, server.Deps{
 		UserUsecase: userUsecase,
+		Log:         log,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)

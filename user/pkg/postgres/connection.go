@@ -10,6 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	pgxUUID "github.com/vgarvardt/pgx-google-uuid/v5"
 )
 
@@ -177,6 +179,14 @@ func (c *Connection) Getx(ctx context.Context, dest interface{}, sqlizer Sqlizer
 		return fmt.Errorf("postgres: to sql: %w", err)
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgres.Getx")
+	defer span.Finish()
+
+	span.LogFields(
+		log.String("query", query),
+		log.Object("args", args),
+	)
+
 	return pgxscan.Get(ctx, c.pool, dest, query, args...)
 }
 
@@ -187,6 +197,14 @@ func (c *Connection) Selectx(ctx context.Context, dest interface{}, sqlizer Sqli
 		return fmt.Errorf("postgres: to sql: %w", err)
 	}
 
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgres.Selectx")
+	defer span.Finish()
+
+	span.LogFields(
+		log.String("query", query),
+		log.Object("args", args),
+	)
+
 	return pgxscan.Select(ctx, c.pool, dest, query, args...)
 }
 
@@ -196,6 +214,14 @@ func (c *Connection) Execx(ctx context.Context, sqlizer Sqlizer) (pgconn.Command
 	if err != nil {
 		return pgconn.CommandTag{}, fmt.Errorf("postgres: to sql: %w", err)
 	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgres.Execx")
+	defer span.Finish()
+
+	span.LogFields(
+		log.String("query", query),
+		log.Object("args", args),
+	)
 
 	return c.pool.Exec(ctx, query, args...)
 }

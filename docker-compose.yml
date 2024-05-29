@@ -5,27 +5,44 @@ services:
     build:
       context: ./gateway
       dockerfile: ./build/Dockerfile
+    environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
     ports:
       - "8800:8080"
       - "8801:8081"
-    links:
-      - auth
+    networks:
+      - tracing
       - user
-      - server
-      - channel
-      - chat
+      - auth
 
   auth:
     build:
       context: ./auth
       dockerfile: ./build/Dockerfile
+    environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
+    networks:
+      - tracing
+      - user
 
   user:
     build:
       context: ./user
       dockerfile: ./build/Dockerfile
+    environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
     depends_on:
       - postgres
+    networks:
+      - tracing
+      - postgresql
+      - user
 
   server:
     build:
@@ -70,9 +87,35 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - postgresql
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.48
+    container_name: jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp" # jaeger-client
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686" # web
+      - "14268:14268"
+      - "9411:9411"
+    networks:
+      - tracing
 
 volumes:
   postgres:
   mongo-volume:
   cache:
     driver: local
+
+networks:
+  tracing:
+    driver: bridge
+  postgresql:
+    driver: bridge
+  user:
+    driver: bridge
+  auth:
+    driver: bridge

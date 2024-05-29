@@ -5,12 +5,11 @@ import (
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/auth/pkg/grpc_utils"
-	"log"
 )
 
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	loginInfo := req.Body.Login
-	log.Printf("Register: received: %s", loginInfo)
+	s.Log.WithContext(ctx).WithField("loginInfo", loginInfo).Info("register: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -36,7 +35,7 @@ func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 
 func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	loginInfo := req.GetLogin()
-	log.Printf("Login: received: %s", loginInfo)
+	s.Log.WithContext(ctx).WithField("loginInfo", loginInfo).Info("login received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -59,7 +58,7 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 }
 
 func (s *AuthServer) OauthLogin(ctx context.Context, req *pb.OauthLoginRequest) (*pb.OauthLoginResponse, error) {
-	log.Printf("Oauth Login: received:")
+	s.Log.WithContext(ctx).Info("Oauth Login: received")
 	loginResult, err := s.AuthUsecase.OauthLogin(ctx, usecases.OauthLoginRequest{})
 	if err != nil {
 		return nil, err
@@ -71,7 +70,7 @@ func (s *AuthServer) OauthLogin(ctx context.Context, req *pb.OauthLoginRequest) 
 }
 
 func (s *AuthServer) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginCallbackRequest) (*pb.OauthLoginCallbackResponse, error) {
-	log.Printf("Oauth login callback: received: %s", req.GetCode())
+	s.Log.WithContext(ctx).WithField("code", req.GetCode()).Info("Oauth login callback: received")
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
 	}

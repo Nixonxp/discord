@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
+	log "github.com/Nixonxp/discord/user/pkg/logger"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
@@ -20,6 +21,7 @@ type Config struct {
 // Deps - server deps
 type Deps struct {
 	UserUsecase usecases.UsecaseInterface
+	Log         *log.Logger
 }
 
 type UserServer struct {

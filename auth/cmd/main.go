@@ -7,17 +7,22 @@ import (
 	"github.com/Nixonxp/discord/auth/internal/app/services/user"
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/auth/internal/middleware/errors"
+	middleware_tracing "github.com/Nixonxp/discord/auth/internal/middleware/tracing"
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
 	"github.com/Nixonxp/discord/auth/pkg/application"
+	logCfg "github.com/Nixonxp/discord/auth/pkg/logger"
+	logger "github.com/Nixonxp/discord/auth/pkg/logger"
 	pkg_middleware "github.com/Nixonxp/discord/auth/pkg/middleware"
 	"github.com/Nixonxp/discord/auth/pkg/rate_limiter"
+	jaeger_tracing "github.com/Nixonxp/discord/auth/pkg/tracing"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
+	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
+	"github.com/opentracing/opentracing-go"
 	ratelimitCustom "github.com/tommy-sho/rate-limiter-grpc-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"log"
 	"os/signal"
 	"syscall"
 	"time"
@@ -29,6 +34,15 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
+
+	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
+	if err != nil {
+		panic("error init logger")
+	}
+
+	if err := jaeger_tracing.Init("auth service"); err != nil {
+		log.Fatal(ctx, err)
+	}
 
 	config := application.Config{
 		GRPCPort: ":8080",
@@ -46,10 +60,11 @@ func main() {
 		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
 			grpcretry.UnaryClientInterceptor(retryOpts...),
 			ratelimitCustom.UnaryClientInterceptor(ratelimitCustom.NewLimiter(1000)),
+			grpc_opentracing.OpenTracingClientInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
 		},
 	}
 
-	userServiceClient, err := user.NewClient(serverConfig)
+	userServiceClient, err := user.NewClient(serverConfig, log)
 	if err != nil {
 		log.Fatalf("failed to create app: %v", err)
 	}
@@ -63,6 +78,7 @@ func main() {
 	authUsecase := usecases.NewAuthUsecase(usecases.Deps{
 		UserRepo:    userInMemoryRepo,
 		UserService: userServiceClient,
+		Log:         log,
 	})
 
 	// limiter per method
@@ -78,11 +94,14 @@ func main() {
 			ratelimit.UnaryServerInterceptor(globalLimiter),
 			methodLimiter.GetInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(),
+			grpc_opentracing.OpenTracingServerInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
+			middleware_tracing.DebugOpenTracingUnaryServerInterceptor(true, true),
 		},
 	}
 
 	srv, err := server.NewAuthServer(ctx, server.Deps{
 		AuthUsecase: authUsecase,
+		Log:         log,
 	})
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)

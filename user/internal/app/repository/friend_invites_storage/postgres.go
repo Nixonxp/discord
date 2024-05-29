@@ -7,6 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Nixonxp/discord/user/internal/app/models"
 	pkgerrors "github.com/Nixonxp/discord/user/pkg/errors"
+	log "github.com/Nixonxp/discord/user/pkg/logger"
 	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,12 +18,14 @@ const friendInvitesTable = "friend_invites"
 type PGFriendInvitesRepository struct {
 	queryBuilder sq.StatementBuilderType
 	conn         *postgres.Connection
+	log          *log.Logger
 }
 
-func NewFriendInvitesPostgresqlRepository(conn *postgres.Connection) *PGFriendInvitesRepository {
+func NewFriendInvitesPostgresqlRepository(conn *postgres.Connection, log *log.Logger) *PGFriendInvitesRepository {
 	return &PGFriendInvitesRepository{
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 		conn:         conn,
+		log:          log,
 	}
 }
 
@@ -35,7 +38,8 @@ func (r *PGFriendInvitesRepository) CreateInvite(ctx context.Context, invite *mo
 	if _, err := r.conn.Execx(ctx, query); err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) && pgError.Code == pgerrcode.UniqueViolation {
-			return pkgerrors.Wrap("create friend invite exec unique error repo", models.ErrAlreadyExists)
+			r.log.WithContext(ctx).WithError(err).WithField("owner_id", invite.OwnerId.String()).Error("create friend invite exec unique error repo")
+			return models.ErrAlreadyExists
 		}
 		return pkgerrors.Wrap("create friend invite exec error repo", err)
 	}
@@ -52,7 +56,8 @@ func (r *PGFriendInvitesRepository) GetInvitesByUserId(ctx context.Context, user
 
 	rows, err := r.conn.Query(ctx, query)
 	if err != nil {
-		return nil, pkgerrors.Wrap("get user friend invites query error repo", err)
+		r.log.WithContext(ctx).WithError(err).WithField("userId", userId.String()).Error("get user friend invites query error repo")
+		return nil, err
 	}
 
 	invites := make([]*models.FriendInvite, 0)
@@ -71,7 +76,8 @@ func (r *PGFriendInvitesRepository) GetInvitesByUserId(ctx context.Context, user
 		invites = append(invites, newFriendInviteModelsFromFriendInviteRow(&friendInviteRowItem))
 	}
 	if err := rows.Err(); err != nil {
-		return nil, pkgerrors.Wrap("get user friend invites query rows error repo", err)
+		r.log.WithContext(ctx).WithError(err).WithField("userId", userId.String()).Error("get user friend invites query rows error repo")
+		return nil, err
 	}
 
 	return &models.UserInvitesInfo{
@@ -89,7 +95,8 @@ func (r *PGFriendInvitesRepository) DeclineInvite(ctx context.Context, inviteId 
 
 	result, err := r.conn.Execx(ctx, query)
 	if err != nil {
-		return pkgerrors.Wrap("decline invite friend exec error repo", err)
+		r.log.WithContext(ctx).WithError(err).WithField("inviteId", inviteId.String()).Error("decline invite friend exec error repo")
+		return err
 	}
 
 	if result.RowsAffected() == 0 {

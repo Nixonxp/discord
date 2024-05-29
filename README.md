@@ -24,3 +24,6 @@ $ make restart
 
 ### Swagger UI
 1. `http://localhost:8801/swaggerui/#` - список всех методов приложения
+
+## Tracing
+http://localhost:16686/
