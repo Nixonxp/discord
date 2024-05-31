@@ -108,7 +108,7 @@ message UserDataResponse {
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string email = 4 [json_name = "email"];
-  string avatar_photo_url = 6 [json_name = "avatar_photo_url"];
+  string avatar_photo_url = 5 [json_name = "avatar_photo_url"];
 }
 
 message GetUserByLoginRequest {
@@ -124,28 +124,42 @@ message GetUserFriendsResponse {
   repeated Friend friends= 1;
 }
 
-message AddToFriendByUserIdRequest {
-  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
-  }];
-}
-
 message Friend {
-  uint64 userId = 1 [json_name = "user_id"];
+  string userId = 1 [json_name = "user_id"];
   string login = 2 [json_name = "login"];
   string name = 3 [json_name = "name"];
   string email = 4 [json_name = "email"];
 }
 
+message GetUserInvitesRequest {
+}
+
+message GetUserInvitesResponse {
+  repeated FriendInvite invites = 1;
+}
+
+message FriendInvite {
+  string inviteId = 1;
+  string ownerId = 2;
+  string userId = 3;
+  string status = 4;
+}
+
+message AddToFriendByUserIdRequest {
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  }];
+}
+
 message AcceptFriendInviteRequest {
-  uint64 invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message DeclineFriendInviteRequest {
-  uint64 invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string invite_id = 1 [json_name = "invite_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true,  (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
@@ -277,6 +291,12 @@ message SendUserPrivateMessageRequest {
 
 message GetUserPrivateMessagesRequest {
   string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  }];
+}
+
+message DeleteFromFriendRequest {
+  string friend_id = 1 [json_name = "friend_id", (buf.validate.field).required = true, (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }

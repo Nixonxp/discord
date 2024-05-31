@@ -19,7 +19,6 @@ type Friend struct {
 	Login          string
 	Name           string
 	Email          string
-	Password       string
 	AvatarPhotoUrl string
 }
 
@@ -30,10 +29,15 @@ type FriendInvite struct {
 	Status   string
 }
 
+type UserFriends struct {
+	UserId   UserID
+	FriendId UserID
+}
+
 type UserInvitesInfo struct {
 	Invites []*FriendInvite
 }
 
 type UserFriendsInfo struct {
-	Friends []*User
+	Friends []*Friend
 }

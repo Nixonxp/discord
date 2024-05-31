@@ -60,6 +60,7 @@ func NewUserServer(ctx context.Context, d Deps) (*UserServer, error) {
 				&pb.AcceptFriendInviteRequest{},
 				&pb.DeclineFriendInviteRequest{},
 				&pb.GetUserInvitesRequest{},
+				&pb.DeleteFromFriendRequest{},
 			),
 		)
 		if err != nil {

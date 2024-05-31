@@ -28,6 +28,7 @@ const (
 	UserService_AddToFriendByUserId_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/AddToFriendByUserId"
 	UserService_AcceptFriendInvite_FullMethodName        = "/github.com.Nixonxp.discord.user.api.v1.UserService/AcceptFriendInvite"
 	UserService_DeclineFriendInvite_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeclineFriendInvite"
+	UserService_DeleteFromFriend_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeleteFromFriend"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -43,6 +44,7 @@ type UserServiceClient interface {
 	AddToFriendByUserId(ctx context.Context, in *AddToFriendByUserIdRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	AcceptFriendInvite(ctx context.Context, in *AcceptFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	DeclineFriendInvite(ctx context.Context, in *DeclineFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 }
 
 type userServiceClient struct {
@@ -134,6 +136,15 @@ func (c *userServiceClient) DeclineFriendInvite(ctx context.Context, in *Decline
 	return out, nil
 }
 
+func (c *userServiceClient) DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, UserService_DeleteFromFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -147,6 +158,7 @@ type UserServiceServer interface {
 	AddToFriendByUserId(context.Context, *AddToFriendByUserIdRequest) (*ActionResponse, error)
 	AcceptFriendInvite(context.Context, *AcceptFriendInviteRequest) (*ActionResponse, error)
 	DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error)
+	DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -180,6 +192,9 @@ func (UnimplementedUserServiceServer) AcceptFriendInvite(context.Context, *Accep
 }
 func (UnimplementedUserServiceServer) DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeclineFriendInvite not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromFriend not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -356,6 +371,24 @@ func _UserService_DeclineFriendInvite_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_DeleteFromFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFromFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteFromFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteFromFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteFromFriend(ctx, req.(*DeleteFromFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -398,6 +431,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeclineFriendInvite",
 			Handler:    _UserService_DeclineFriendInvite_Handler,
+		},
+		{
+			MethodName: "DeleteFromFriend",
+			Handler:    _UserService_DeleteFromFriend_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

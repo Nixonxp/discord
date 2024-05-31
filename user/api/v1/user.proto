@@ -14,6 +14,7 @@ service UserService {
   rpc AddToFriendByUserId(AddToFriendByUserIdRequest) returns (ActionResponse) {}
   rpc AcceptFriendInvite(AcceptFriendInviteRequest) returns (ActionResponse) {}
   rpc DeclineFriendInvite(DeclineFriendInviteRequest) returns (ActionResponse) {}
+  rpc DeleteFromFriend(DeleteFromFriendRequest) returns (ActionResponse) {}
 }
 
 message CreateUserRequest {
@@ -94,4 +95,8 @@ message FriendInvite {
   string ownerId = 2;
   string userId = 3;
   string status = 4;
+}
+
+message DeleteFromFriendRequest {
+  string friendId = 1;
 }

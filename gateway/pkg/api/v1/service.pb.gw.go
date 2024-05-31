@@ -305,6 +305,24 @@ func local_request_GatewayService_GetUserFriends_0(ctx context.Context, marshale
 
 }
 
+func request_GatewayService_GetUserInvites_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUserInvitesRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetUserInvites(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_GatewayService_GetUserInvites_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetUserInvitesRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetUserInvites(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_GatewayService_AddToFriendByUserId_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq AddToFriendByUserIdRequest
 	var metadata runtime.ServerMetadata
@@ -321,7 +339,7 @@ func request_GatewayService_AddToFriendByUserId_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -347,7 +365,7 @@ func local_request_GatewayService_AddToFriendByUserId_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -373,7 +391,7 @@ func request_GatewayService_AcceptFriendInvite_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "invite_id")
 	}
 
-	protoReq.InviteId, err = runtime.Uint64(val)
+	protoReq.InviteId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "invite_id", err)
 	}
@@ -399,12 +417,64 @@ func local_request_GatewayService_AcceptFriendInvite_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "invite_id")
 	}
 
-	protoReq.InviteId, err = runtime.Uint64(val)
+	protoReq.InviteId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "invite_id", err)
 	}
 
 	msg, err := server.AcceptFriendInvite(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_GatewayService_DeleteFromFriend_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteFromFriendRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["friend_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "friend_id")
+	}
+
+	protoReq.FriendId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "friend_id", err)
+	}
+
+	msg, err := client.DeleteFromFriend(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_GatewayService_DeleteFromFriend_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq DeleteFromFriendRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["friend_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "friend_id")
+	}
+
+	protoReq.FriendId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "friend_id", err)
+	}
+
+	msg, err := server.DeleteFromFriend(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -425,7 +495,7 @@ func request_GatewayService_DeclineFriendInvite_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "invite_id")
 	}
 
-	protoReq.InviteId, err = runtime.Uint64(val)
+	protoReq.InviteId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "invite_id", err)
 	}
@@ -451,7 +521,7 @@ func local_request_GatewayService_DeclineFriendInvite_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "invite_id")
 	}
 
-	protoReq.InviteId, err = runtime.Uint64(val)
+	protoReq.InviteId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "invite_id", err)
 	}
@@ -1370,6 +1440,31 @@ func RegisterGatewayServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 
 	})
 
+	mux.Handle("GET", pattern_GatewayService_GetUserInvites_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserInvites", runtime.WithHTTPPathPattern("/api/v1/invites"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_GatewayService_GetUserInvites_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GatewayService_GetUserInvites_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_GatewayService_AddToFriendByUserId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1417,6 +1512,31 @@ func RegisterGatewayServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 		}
 
 		forward_GatewayService_AcceptFriendInvite_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("DELETE", pattern_GatewayService_DeleteFromFriend_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/DeleteFromFriend", runtime.WithHTTPPathPattern("/api/v1/friends/{friend_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_GatewayService_DeleteFromFriend_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GatewayService_DeleteFromFriend_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1990,6 +2110,28 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 
 	})
 
+	mux.Handle("GET", pattern_GatewayService_GetUserInvites_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserInvites", runtime.WithHTTPPathPattern("/api/v1/invites"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_GatewayService_GetUserInvites_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GatewayService_GetUserInvites_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_GatewayService_AddToFriendByUserId_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -2031,6 +2173,28 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		}
 
 		forward_GatewayService_AcceptFriendInvite_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("DELETE", pattern_GatewayService_DeleteFromFriend_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/DeleteFromFriend", runtime.WithHTTPPathPattern("/api/v1/friends/{friend_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_GatewayService_DeleteFromFriend_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GatewayService_DeleteFromFriend_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2382,9 +2546,13 @@ var (
 
 	pattern_GatewayService_GetUserFriends_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "friends"}, ""))
 
+	pattern_GatewayService_GetUserInvites_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "invites"}, ""))
+
 	pattern_GatewayService_AddToFriendByUserId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "friends", "add", "user_id"}, ""))
 
 	pattern_GatewayService_AcceptFriendInvite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "friends", "invite", "accept", "invite_id"}, ""))
+
+	pattern_GatewayService_DeleteFromFriend_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "friends", "friend_id"}, ""))
 
 	pattern_GatewayService_DeclineFriendInvite_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"api", "v1", "friends", "invite", "decline", "invite_id"}, ""))
 
@@ -2432,9 +2600,13 @@ var (
 
 	forward_GatewayService_GetUserFriends_0 = runtime.ForwardResponseMessage
 
+	forward_GatewayService_GetUserInvites_0 = runtime.ForwardResponseMessage
+
 	forward_GatewayService_AddToFriendByUserId_0 = runtime.ForwardResponseMessage
 
 	forward_GatewayService_AcceptFriendInvite_0 = runtime.ForwardResponseMessage
+
+	forward_GatewayService_DeleteFromFriend_0 = runtime.ForwardResponseMessage
 
 	forward_GatewayService_DeclineFriendInvite_0 = runtime.ForwardResponseMessage
 

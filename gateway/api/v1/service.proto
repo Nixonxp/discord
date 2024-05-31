@@ -305,6 +305,49 @@ service GatewayService {
     };
   }
 
+  // Получить список заявок в друзья пользователя
+  rpc GetUserInvites(GetUserInvitesRequest) returns (GetUserInvitesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/invites"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "Get all friends invites successful"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.GetUserInvitesResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "204";
+        value: {
+          description: "No content";
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
   // Добавление пользователя в друзья
   rpc AddToFriendByUserId(AddToFriendByUserIdRequest) returns (ActionResponse) {
     option (google.api.http) = {
@@ -371,6 +414,52 @@ service GatewayService {
         key: "400";
         value: {
           description: "Invite id is incorrect";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Удалить из друзей
+  rpc DeleteFromFriend(DeleteFromFriendRequest) returns (ActionResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/friends/{friend_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "friends";
+      responses: {
+        key: "200"
+        value: {
+          description: "User successfully deleted from friend"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Friend id is incorrect";
           schema: {
             json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
           }

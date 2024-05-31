@@ -496,8 +496,7 @@
             "name": "user_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -546,8 +545,7 @@
             "name": "invite_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -596,10 +594,97 @@
             "name": "invite_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/friends/{friend_id}": {
+      "delete": {
+        "summary": "Удалить из друзей",
+        "operationId": "GatewayService_DeleteFromFriend",
+        "responses": {
+          "200": {
+            "description": "User successfully deleted from friend",
+            "schema": {
+              "$ref": "#/definitions/v1ActionResponse"
+            }
+          },
+          "400": {
+            "description": "Friend id is incorrect",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friend_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "friends"
+        ]
+      }
+    },
+    "/api/v1/invites": {
+      "get": {
+        "summary": "Получить список заявок в друзья пользователя",
+        "operationId": "GatewayService_GetUserInvites",
+        "responses": {
+          "200": {
+            "description": "Get all friends invites successful",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserInvitesResponse"
+            }
+          },
+          "204": {
+            "description": "No content",
+            "schema": {}
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
         "tags": [
           "friends"
         ]
@@ -1324,8 +1409,7 @@
       "type": "object",
       "properties": {
         "user_id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "string"
         },
         "login": {
           "type": "string"
@@ -1334,6 +1418,23 @@
           "type": "string"
         },
         "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1FriendInvite": {
+      "type": "object",
+      "properties": {
+        "inviteId": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "status": {
           "type": "string"
         }
       }
@@ -1358,6 +1459,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Friend"
+          }
+        }
+      }
+    },
+    "v1GetUserInvitesResponse": {
+      "type": "object",
+      "properties": {
+        "invites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FriendInvite"
           }
         }
       }

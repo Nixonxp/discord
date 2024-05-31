@@ -121,15 +121,18 @@ func (s *UserServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsR
 		return nil, err
 	}
 
+	friends := make([]*pb.Friend, len(result.Friends))
+	for i, friend := range result.Friends {
+		friends[i] = &pb.Friend{
+			UserId: friend.UserId.String(),
+			Login:  friend.Login,
+			Name:   friend.Name,
+			Email:  friend.Email,
+		}
+	}
+
 	return &pb.GetUserFriendsResponse{
-		Friends: []*pb.Friend{
-			{
-				UserId: result.Friends[0].Id.String(),
-				Login:  result.Friends[0].Login,
-				Name:   result.Friends[0].Name,
-				Email:  result.Friends[0].Email,
-			},
-		},
+		Friends: friends,
 	}, nil
 }
 
@@ -209,6 +212,25 @@ func (s *UserServer) DeclineFriendInvite(ctx context.Context, req *pb.DeclineFri
 
 	result, err := s.UserUsecase.DeclineFriendInvite(ctx, usecases.DeclineFriendInviteRequest{
 		InviteId: req.GetInviteId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.ActionResponse{
+		Success: result.Success,
+	}, nil
+}
+
+func (s *UserServer) DeleteFromFriend(ctx context.Context, req *pb.DeleteFromFriendRequest) (*pb.ActionResponse, error) {
+	s.ctxLog(ctx).Infof("delete friends received: %s", req.GetFriendId())
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	result, err := s.UserUsecase.DeleteFromFriend(ctx, usecases.DeleteFromFriendRequest{
+		FriendId: req.GetFriendId(),
 	})
 	if err != nil {
 		return nil, err

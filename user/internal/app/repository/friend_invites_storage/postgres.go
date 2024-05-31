@@ -6,9 +6,9 @@ import (
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/Nixonxp/discord/user/internal/app/models"
+	repository "github.com/Nixonxp/discord/user/internal/app/repository/user_storage"
 	pkgerrors "github.com/Nixonxp/discord/user/pkg/errors"
 	log "github.com/Nixonxp/discord/user/pkg/logger"
-	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -17,14 +17,14 @@ const friendInvitesTable = "friend_invites"
 
 type PGFriendInvitesRepository struct {
 	queryBuilder sq.StatementBuilderType
-	conn         *postgres.Connection
+	driver       repository.QueryEngineProvider
 	log          *log.Logger
 }
 
-func NewFriendInvitesPostgresqlRepository(conn *postgres.Connection, log *log.Logger) *PGFriendInvitesRepository {
+func NewFriendInvitesPostgresqlRepository(driver repository.QueryEngineProvider, log *log.Logger) *PGFriendInvitesRepository {
 	return &PGFriendInvitesRepository{
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-		conn:         conn,
+		driver:       driver,
 		log:          log,
 	}
 }
@@ -35,7 +35,7 @@ func (r *PGFriendInvitesRepository) CreateInvite(ctx context.Context, invite *mo
 		SetMap(row.ValuesMap()).
 		PlaceholderFormat(sq.Dollar)
 
-	if _, err := r.conn.Execx(ctx, query); err != nil {
+	if _, err := r.driver.GetQueryEngine(ctx).Execx(ctx, query); err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) && pgError.Code == pgerrcode.UniqueViolation {
 			r.log.WithContext(ctx).WithError(err).WithField("owner_id", invite.OwnerId.String()).Error("create friend invite exec unique error repo")
@@ -54,7 +54,7 @@ func (r *PGFriendInvitesRepository) GetInvitesByUserId(ctx context.Context, user
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
-	rows, err := r.conn.Query(ctx, query)
+	rows, err := r.driver.GetQueryEngine(ctx).Query(ctx, query)
 	if err != nil {
 		r.log.WithContext(ctx).WithError(err).WithField("userId", userId.String()).Error("get user friend invites query error repo")
 		return nil, err
@@ -85,6 +85,28 @@ func (r *PGFriendInvitesRepository) GetInvitesByUserId(ctx context.Context, user
 	}, nil
 }
 
+func (r *PGFriendInvitesRepository) GetInviteById(ctx context.Context, inviteId models.InviteId) (*models.FriendInvite, error) {
+	query := sq.Select(columns()...).
+		From(friendInvitesTable).
+		Suffix(fmt.Sprintf("WHERE id::text = '%s'", inviteId.String())).
+		PlaceholderFormat(sq.Dollar)
+
+	inviteRow := &friendInviteRow{}
+
+	if err := r.driver.GetQueryEngine(ctx).Getx(ctx, inviteRow, query); err != nil {
+		if err.Error() == repository.ErrNoRows.Error() {
+			r.log.WithContext(ctx).WithError(err).WithField("inviteId", inviteId.String()).Error("invite not found in repository")
+			return nil, pkgerrors.Wrap("invite not found", models.ErrNotFound)
+		}
+
+		r.log.WithContext(ctx).WithError(err).WithField("inviteId", inviteId.String()).Error("get invite exec error repo")
+		return nil, err
+	}
+
+	resultInvite := newFriendInviteModelsFromFriendInviteRow(inviteRow)
+	return resultInvite, nil
+}
+
 func (r *PGFriendInvitesRepository) DeclineInvite(ctx context.Context, inviteId models.InviteId) error {
 	query := sq.Update(friendInvitesTable).
 		SetMap(map[string]any{
@@ -93,9 +115,30 @@ func (r *PGFriendInvitesRepository) DeclineInvite(ctx context.Context, inviteId 
 		PlaceholderFormat(sq.Dollar).
 		Suffix(fmt.Sprintf("WHERE id::text = '%s' AND status = '%s'", inviteId.String(), models.PendingStatus))
 
-	result, err := r.conn.Execx(ctx, query)
+	result, err := r.driver.GetQueryEngine(ctx).Execx(ctx, query)
 	if err != nil {
 		r.log.WithContext(ctx).WithError(err).WithField("inviteId", inviteId.String()).Error("decline invite friend exec error repo")
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return models.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *PGFriendInvitesRepository) AcceptInvite(ctx context.Context, inviteId models.InviteId) error {
+	query := sq.Update(friendInvitesTable).
+		SetMap(map[string]any{
+			"status": models.AcceptedStatus,
+		}).
+		PlaceholderFormat(sq.Dollar).
+		Suffix(fmt.Sprintf("WHERE id::text = '%s' AND status = '%s'", inviteId.String(), models.PendingStatus))
+
+	result, err := r.driver.GetQueryEngine(ctx).Execx(ctx, query)
+	if err != nil {
+		r.log.WithContext(ctx).WithError(err).WithField("inviteId", inviteId.String()).Error("accept invite friend exec error repo")
 		return err
 	}
 

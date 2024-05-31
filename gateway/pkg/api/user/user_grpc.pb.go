@@ -19,24 +19,32 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_UpdateUser_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/UpdateUser"
-	UserService_GetUserByLogin_FullMethodName      = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLogin"
-	UserService_GetUserFriends_FullMethodName      = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserFriends"
-	UserService_AddToFriendByUserId_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/AddToFriendByUserId"
-	UserService_AcceptFriendInvite_FullMethodName  = "/github.com.Nixonxp.discord.user.api.v1.UserService/AcceptFriendInvite"
-	UserService_DeclineFriendInvite_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeclineFriendInvite"
+	UserService_CreateUser_FullMethodName                = "/github.com.Nixonxp.discord.user.api.v1.UserService/CreateUser"
+	UserService_GetUserByLoginAndPassword_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLoginAndPassword"
+	UserService_UpdateUser_FullMethodName                = "/github.com.Nixonxp.discord.user.api.v1.UserService/UpdateUser"
+	UserService_GetUserByLogin_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLogin"
+	UserService_GetUserFriends_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserFriends"
+	UserService_GetUserInvites_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserInvites"
+	UserService_AddToFriendByUserId_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/AddToFriendByUserId"
+	UserService_AcceptFriendInvite_FullMethodName        = "/github.com.Nixonxp.discord.user.api.v1.UserService/AcceptFriendInvite"
+	UserService_DeclineFriendInvite_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeclineFriendInvite"
+	UserService_DeleteFromFriend_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeleteFromFriend"
 )
 
 // UserServiceClient is the client API for UserService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
+	GetUserByLoginAndPassword(ctx context.Context, in *GetUserByLoginAndPasswordRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	GetUserByLogin(ctx context.Context, in *GetUserByLoginRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	GetUserFriends(ctx context.Context, in *GetUserFriendsRequest, opts ...grpc.CallOption) (*GetUserFriendsResponse, error)
+	GetUserInvites(ctx context.Context, in *GetUserInvitesRequest, opts ...grpc.CallOption) (*GetUserInvitesResponse, error)
 	AddToFriendByUserId(ctx context.Context, in *AddToFriendByUserIdRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	AcceptFriendInvite(ctx context.Context, in *AcceptFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	DeclineFriendInvite(ctx context.Context, in *DeclineFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 }
 
 type userServiceClient struct {
@@ -45,6 +53,24 @@ type userServiceClient struct {
 
 func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
+}
+
+func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
+	out := new(UserDataResponse)
+	err := c.cc.Invoke(ctx, UserService_CreateUser_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserByLoginAndPassword(ctx context.Context, in *GetUserByLoginAndPasswordRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
+	out := new(UserDataResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserByLoginAndPassword_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
@@ -68,6 +94,15 @@ func (c *userServiceClient) GetUserByLogin(ctx context.Context, in *GetUserByLog
 func (c *userServiceClient) GetUserFriends(ctx context.Context, in *GetUserFriendsRequest, opts ...grpc.CallOption) (*GetUserFriendsResponse, error) {
 	out := new(GetUserFriendsResponse)
 	err := c.cc.Invoke(ctx, UserService_GetUserFriends_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserInvites(ctx context.Context, in *GetUserInvitesRequest, opts ...grpc.CallOption) (*GetUserInvitesResponse, error) {
+	out := new(GetUserInvitesResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserInvites_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,16 +136,29 @@ func (c *userServiceClient) DeclineFriendInvite(ctx context.Context, in *Decline
 	return out, nil
 }
 
+func (c *userServiceClient) DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, UserService_DeleteFromFriend_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
+	CreateUser(context.Context, *CreateUserRequest) (*UserDataResponse, error)
+	GetUserByLoginAndPassword(context.Context, *GetUserByLoginAndPasswordRequest) (*UserDataResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UserDataResponse, error)
 	GetUserByLogin(context.Context, *GetUserByLoginRequest) (*UserDataResponse, error)
 	GetUserFriends(context.Context, *GetUserFriendsRequest) (*GetUserFriendsResponse, error)
+	GetUserInvites(context.Context, *GetUserInvitesRequest) (*GetUserInvitesResponse, error)
 	AddToFriendByUserId(context.Context, *AddToFriendByUserIdRequest) (*ActionResponse, error)
 	AcceptFriendInvite(context.Context, *AcceptFriendInviteRequest) (*ActionResponse, error)
 	DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error)
+	DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -118,6 +166,12 @@ type UserServiceServer interface {
 type UnimplementedUserServiceServer struct {
 }
 
+func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*UserDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserByLoginAndPassword(context.Context, *GetUserByLoginAndPasswordRequest) (*UserDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserByLoginAndPassword not implemented")
+}
 func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
@@ -127,6 +181,9 @@ func (UnimplementedUserServiceServer) GetUserByLogin(context.Context, *GetUserBy
 func (UnimplementedUserServiceServer) GetUserFriends(context.Context, *GetUserFriendsRequest) (*GetUserFriendsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFriends not implemented")
 }
+func (UnimplementedUserServiceServer) GetUserInvites(context.Context, *GetUserInvitesRequest) (*GetUserInvitesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInvites not implemented")
+}
 func (UnimplementedUserServiceServer) AddToFriendByUserId(context.Context, *AddToFriendByUserIdRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToFriendByUserId not implemented")
 }
@@ -135,6 +192,9 @@ func (UnimplementedUserServiceServer) AcceptFriendInvite(context.Context, *Accep
 }
 func (UnimplementedUserServiceServer) DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeclineFriendInvite not implemented")
+}
+func (UnimplementedUserServiceServer) DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromFriend not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -147,6 +207,42 @@ type UnsafeUserServiceServer interface {
 
 func RegisterUserServiceServer(s grpc.ServiceRegistrar, srv UserServiceServer) {
 	s.RegisterService(&UserService_ServiceDesc, srv)
+}
+
+func _UserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CreateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_CreateUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserByLoginAndPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByLoginAndPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserByLoginAndPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserByLoginAndPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserByLoginAndPassword(ctx, req.(*GetUserByLoginAndPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _UserService_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -199,6 +295,24 @@ func _UserService_GetUserFriends_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserFriends(ctx, req.(*GetUserFriendsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserInvites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInvitesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserInvites(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserInvites_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserInvites(ctx, req.(*GetUserInvitesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -257,6 +371,24 @@ func _UserService_DeclineFriendInvite_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_DeleteFromFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFromFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).DeleteFromFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_DeleteFromFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).DeleteFromFriend(ctx, req.(*DeleteFromFriendRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -264,6 +396,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "github.com.Nixonxp.discord.user.api.v1.UserService",
 	HandlerType: (*UserServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateUser",
+			Handler:    _UserService_CreateUser_Handler,
+		},
+		{
+			MethodName: "GetUserByLoginAndPassword",
+			Handler:    _UserService_GetUserByLoginAndPassword_Handler,
+		},
 		{
 			MethodName: "UpdateUser",
 			Handler:    _UserService_UpdateUser_Handler,
@@ -277,6 +417,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_GetUserFriends_Handler,
 		},
 		{
+			MethodName: "GetUserInvites",
+			Handler:    _UserService_GetUserInvites_Handler,
+		},
+		{
 			MethodName: "AddToFriendByUserId",
 			Handler:    _UserService_AddToFriendByUserId_Handler,
 		},
@@ -287,6 +431,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeclineFriendInvite",
 			Handler:    _UserService_DeclineFriendInvite_Handler,
+		},
+		{
+			MethodName: "DeleteFromFriend",
+			Handler:    _UserService_DeleteFromFriend_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

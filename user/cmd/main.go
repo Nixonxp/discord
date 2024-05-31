@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	repositoryFriendInvte "github.com/Nixonxp/discord/user/internal/app/repository/friend_invites_storage"
+	repositoryUserFriends "github.com/Nixonxp/discord/user/internal/app/repository/user_friends_storage"
 	repository "github.com/Nixonxp/discord/user/internal/app/repository/user_storage"
 	"github.com/Nixonxp/discord/user/internal/app/server"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
@@ -15,6 +16,7 @@ import (
 	"github.com/Nixonxp/discord/user/pkg/postgres"
 	"github.com/Nixonxp/discord/user/pkg/rate_limiter"
 	jaeger_tracing "github.com/Nixonxp/discord/user/pkg/tracing"
+	"github.com/Nixonxp/discord/user/pkg/transaction_manager"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
@@ -69,12 +71,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userRepo := repository.NewUserPostgresqlRepository(pool, log)
-	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(pool, log)
+	txManager := transaction_manager.New(pool)
+
+	userRepo := repository.NewUserPostgresqlRepository(txManager, log)
+	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(txManager, log)
+	friendsRepo := repositoryUserFriends.NewUserFriendsPostgresqlRepository(txManager, log)
 
 	userUsecase := usecases.NewUserUsecase(usecases.Deps{
-		UserRepo:          userRepo,
-		FriendInvitesRepo: friendInvitesRepo,
+		UserRepo:           userRepo,
+		FriendInvitesRepo:  friendInvitesRepo,
+		UserFriendsRepo:    friendsRepo,
+		TransactionManager: txManager,
 	})
 
 	globalLimiter := rate_limiter.NewRateLimiter(1000)

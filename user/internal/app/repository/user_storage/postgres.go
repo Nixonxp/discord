@@ -8,23 +8,27 @@ import (
 	"github.com/Nixonxp/discord/user/internal/app/models"
 	pkgerrors "github.com/Nixonxp/discord/user/pkg/errors"
 	log "github.com/Nixonxp/discord/user/pkg/logger"
-	"github.com/Nixonxp/discord/user/pkg/postgres"
+	"github.com/Nixonxp/discord/user/pkg/transaction_manager"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 )
+
+type QueryEngineProvider interface {
+	GetQueryEngine(ctx context.Context) transaction_manager.QueryEngine
+}
 
 const userTable = "users"
 
 type PGUserRepository struct {
 	queryBuilder sq.StatementBuilderType
-	conn         *postgres.Connection
+	driver       QueryEngineProvider
 	log          *log.Logger
 }
 
-func NewUserPostgresqlRepository(conn *postgres.Connection, log *log.Logger) *PGUserRepository {
+func NewUserPostgresqlRepository(driver QueryEngineProvider, log *log.Logger) *PGUserRepository {
 	return &PGUserRepository{
 		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
-		conn:         conn,
+		driver:       driver,
 		log:          log,
 	}
 }
@@ -39,7 +43,7 @@ func (r *PGUserRepository) CreateUser(ctx context.Context, user *models.User) er
 		SetMap(row.ValuesMap()).
 		PlaceholderFormat(sq.Dollar)
 
-	if _, err = r.conn.Execx(ctx, query); err != nil {
+	if _, err = r.driver.GetQueryEngine(ctx).Execx(ctx, query); err != nil {
 		var pgError *pgconn.PgError
 		if errors.As(err, &pgError) && pgError.Code == pgerrcode.UniqueViolation {
 			return pkgerrors.Wrap("create user exec unique error repo", models.ErrAlreadyExists)
@@ -61,7 +65,7 @@ func (r *PGUserRepository) UpdateUser(ctx context.Context, user *models.User) er
 		PlaceholderFormat(sq.Dollar).
 		Where(sq.Eq{"id": user.Id.String()})
 
-	result, err := r.conn.Execx(ctx, query)
+	result, err := r.driver.GetQueryEngine(ctx).Execx(ctx, query)
 	if err != nil {
 		r.ctxLog(ctx).WithError(err).WithField("user", user).Error("update user exec error repo")
 		return err
@@ -83,7 +87,7 @@ func (r *PGUserRepository) GetUserByLogin(ctx context.Context, login string) (*m
 		PlaceholderFormat(sq.Dollar)
 
 	user := &userRow{}
-	if err := r.conn.Getx(ctx, user, query); err != nil {
+	if err := r.driver.GetQueryEngine(ctx).Getx(ctx, user, query); err != nil {
 		if err.Error() == ErrNoRows.Error() {
 			r.ctxLog(ctx).WithError(err).WithField("login", login).Error("user not found in repository")
 			return nil, pkgerrors.Wrap("user not found", models.ErrNotFound)
@@ -109,7 +113,7 @@ func (r *PGUserRepository) GetUserById(ctx context.Context, userId models.UserID
 		PlaceholderFormat(sq.Dollar)
 
 	user := &userRow{}
-	if err := r.conn.Getx(ctx, user, query); err != nil {
+	if err := r.driver.GetQueryEngine(ctx).Getx(ctx, user, query); err != nil {
 		if err.Error() == ErrNoRows.Error() {
 			r.ctxLog(ctx).WithError(err).WithField("userId", userId).Error("get user not found error repo")
 			return nil, models.ErrNotFound

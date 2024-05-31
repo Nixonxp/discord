@@ -42,3 +42,7 @@ type AcceptFriendInviteRequest struct {
 type DeclineFriendInviteRequest struct {
 	InviteId string
 }
+
+type DeleteFromFriendRequest struct {
+	FriendId string
+}

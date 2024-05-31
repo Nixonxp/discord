@@ -63,6 +63,8 @@ func NewDiscordGatewayServiceServer(ctx context.Context, d Deps) (*DiscordGatewa
 				&pb.LeaveChannelRequest{},
 				&pb.SendUserPrivateMessageRequest{},
 				&pb.GetUserPrivateMessagesRequest{},
+				&pb.DeleteFromFriendRequest{},
+				&pb.GetUserInvitesRequest{},
 			),
 		)
 		if err != nil {
@@ -196,6 +198,32 @@ func (s *DiscordGatewayServiceServer) DeclineFriendInvite(ctx context.Context, r
 	}
 
 	resp, err := s.DiscordGatewayService.DeclineFriendInvite(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *DiscordGatewayServiceServer) GetUserInvites(ctx context.Context, req *pb.GetUserInvitesRequest) (*pb.GetUserInvitesResponse, error) {
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	resp, err := s.DiscordGatewayService.GetUserInvites(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *DiscordGatewayServiceServer) DeleteFromFriend(ctx context.Context, req *pb.DeleteFromFriendRequest) (*pb.ActionResponse, error) {
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	resp, err := s.DiscordGatewayService.DeleteFromFriend(ctx, req)
 	if err != nil {
 		return nil, err
 	}

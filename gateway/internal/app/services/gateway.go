@@ -263,6 +263,54 @@ func (s *DiscordGatewayService) DeclineFriendInvite(ctx context.Context, req *pb
 	}, nil
 }
 
+func (s *DiscordGatewayService) GetUserInvites(ctx context.Context, req *pb.GetUserInvitesRequest) (*pb.GetUserInvitesResponse, error) {
+	userClient := pb_user.NewUserServiceClient(s.UserConn)
+	request := pb_user.GetUserInvitesRequest{}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserInvites")
+	defer span.Finish()
+
+	response, err := userClient.GetUserInvites(ctx, &request)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	invites := make([]*pb.FriendInvite, len(response.GetInvites()))
+	for i, invite := range response.GetInvites() {
+		invites[i] = &pb.FriendInvite{
+			InviteId: invite.InviteId,
+			OwnerId:  invite.OwnerId,
+			UserId:   invite.UserId,
+			Status:   invite.Status,
+		}
+	}
+
+	return &pb.GetUserInvitesResponse{
+		Invites: invites,
+	}, nil
+}
+
+func (s *DiscordGatewayService) DeleteFromFriend(ctx context.Context, req *pb.DeleteFromFriendRequest) (*pb.ActionResponse, error) {
+	userClient := pb_user.NewUserServiceClient(s.UserConn)
+	request := pb_user.DeleteFromFriendRequest{
+		FriendId: req.GetFriendId(),
+	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.DeleteFromFriend")
+	defer span.Finish()
+
+	response, err := userClient.DeleteFromFriend(ctx, &request)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &pb.ActionResponse{
+		Success: response.GetSuccess(),
+	}, nil
+}
+
 func (s *DiscordGatewayService) CreateServer(ctx context.Context, req *pb.CreateServerRequest) (*pb.CreateServerResponse, error) {
 	serverClient := pb_server.NewServerServiceClient(s.ServerConn)
 	request := pb_server.CreateServerRequest{

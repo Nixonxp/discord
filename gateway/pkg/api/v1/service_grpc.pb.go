@@ -26,8 +26,10 @@ const (
 	GatewayService_UpdateUser_FullMethodName             = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/UpdateUser"
 	GatewayService_GetUserByLogin_FullMethodName         = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserByLogin"
 	GatewayService_GetUserFriends_FullMethodName         = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserFriends"
+	GatewayService_GetUserInvites_FullMethodName         = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserInvites"
 	GatewayService_AddToFriendByUserId_FullMethodName    = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/AddToFriendByUserId"
 	GatewayService_AcceptFriendInvite_FullMethodName     = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/AcceptFriendInvite"
+	GatewayService_DeleteFromFriend_FullMethodName       = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/DeleteFromFriend"
 	GatewayService_DeclineFriendInvite_FullMethodName    = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/DeclineFriendInvite"
 	GatewayService_CreateServer_FullMethodName           = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/CreateServer"
 	GatewayService_SearchServer_FullMethodName           = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/SearchServer"
@@ -63,10 +65,14 @@ type GatewayServiceClient interface {
 	GetUserByLogin(ctx context.Context, in *GetUserByLoginRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	// Получить список друзей пользователя
 	GetUserFriends(ctx context.Context, in *GetUserFriendsRequest, opts ...grpc.CallOption) (*GetUserFriendsResponse, error)
+	// Получить список заявок в друзья пользователя
+	GetUserInvites(ctx context.Context, in *GetUserInvitesRequest, opts ...grpc.CallOption) (*GetUserInvitesResponse, error)
 	// Добавление пользователя в друзья
 	AddToFriendByUserId(ctx context.Context, in *AddToFriendByUserIdRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Принять пользователя в друзья
 	AcceptFriendInvite(ctx context.Context, in *AcceptFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	// Удалить из друзей
+	DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Отклонить заявку  пользователя в друзья
 	DeclineFriendInvite(ctx context.Context, in *DeclineFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Добавить сервер
@@ -170,6 +176,15 @@ func (c *gatewayServiceClient) GetUserFriends(ctx context.Context, in *GetUserFr
 	return out, nil
 }
 
+func (c *gatewayServiceClient) GetUserInvites(ctx context.Context, in *GetUserInvitesRequest, opts ...grpc.CallOption) (*GetUserInvitesResponse, error) {
+	out := new(GetUserInvitesResponse)
+	err := c.cc.Invoke(ctx, GatewayService_GetUserInvites_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gatewayServiceClient) AddToFriendByUserId(ctx context.Context, in *AddToFriendByUserIdRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
 	out := new(ActionResponse)
 	err := c.cc.Invoke(ctx, GatewayService_AddToFriendByUserId_FullMethodName, in, out, opts...)
@@ -182,6 +197,15 @@ func (c *gatewayServiceClient) AddToFriendByUserId(ctx context.Context, in *AddT
 func (c *gatewayServiceClient) AcceptFriendInvite(ctx context.Context, in *AcceptFriendInviteRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
 	out := new(ActionResponse)
 	err := c.cc.Invoke(ctx, GatewayService_AcceptFriendInvite_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) DeleteFromFriend(ctx context.Context, in *DeleteFromFriendRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, GatewayService_DeleteFromFriend_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,10 +365,14 @@ type GatewayServiceServer interface {
 	GetUserByLogin(context.Context, *GetUserByLoginRequest) (*UserDataResponse, error)
 	// Получить список друзей пользователя
 	GetUserFriends(context.Context, *GetUserFriendsRequest) (*GetUserFriendsResponse, error)
+	// Получить список заявок в друзья пользователя
+	GetUserInvites(context.Context, *GetUserInvitesRequest) (*GetUserInvitesResponse, error)
 	// Добавление пользователя в друзья
 	AddToFriendByUserId(context.Context, *AddToFriendByUserIdRequest) (*ActionResponse, error)
 	// Принять пользователя в друзья
 	AcceptFriendInvite(context.Context, *AcceptFriendInviteRequest) (*ActionResponse, error)
+	// Удалить из друзей
+	DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error)
 	// Отклонить заявку  пользователя в друзья
 	DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error)
 	// Добавить сервер
@@ -403,11 +431,17 @@ func (UnimplementedGatewayServiceServer) GetUserByLogin(context.Context, *GetUse
 func (UnimplementedGatewayServiceServer) GetUserFriends(context.Context, *GetUserFriendsRequest) (*GetUserFriendsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFriends not implemented")
 }
+func (UnimplementedGatewayServiceServer) GetUserInvites(context.Context, *GetUserInvitesRequest) (*GetUserInvitesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInvites not implemented")
+}
 func (UnimplementedGatewayServiceServer) AddToFriendByUserId(context.Context, *AddToFriendByUserIdRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToFriendByUserId not implemented")
 }
 func (UnimplementedGatewayServiceServer) AcceptFriendInvite(context.Context, *AcceptFriendInviteRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptFriendInvite not implemented")
+}
+func (UnimplementedGatewayServiceServer) DeleteFromFriend(context.Context, *DeleteFromFriendRequest) (*ActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromFriend not implemented")
 }
 func (UnimplementedGatewayServiceServer) DeclineFriendInvite(context.Context, *DeclineFriendInviteRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeclineFriendInvite not implemented")
@@ -593,6 +627,24 @@ func _GatewayService_GetUserFriends_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_GetUserInvites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInvitesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).GetUserInvites(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_GetUserInvites_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).GetUserInvites(ctx, req.(*GetUserInvitesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GatewayService_AddToFriendByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddToFriendByUserIdRequest)
 	if err := dec(in); err != nil {
@@ -625,6 +677,24 @@ func _GatewayService_AcceptFriendInvite_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GatewayServiceServer).AcceptFriendInvite(ctx, req.(*AcceptFriendInviteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_DeleteFromFriend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFromFriendRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).DeleteFromFriend(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_DeleteFromFriend_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).DeleteFromFriend(ctx, req.(*DeleteFromFriendRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -935,12 +1005,20 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GatewayService_GetUserFriends_Handler,
 		},
 		{
+			MethodName: "GetUserInvites",
+			Handler:    _GatewayService_GetUserInvites_Handler,
+		},
+		{
 			MethodName: "AddToFriendByUserId",
 			Handler:    _GatewayService_AddToFriendByUserId_Handler,
 		},
 		{
 			MethodName: "AcceptFriendInvite",
 			Handler:    _GatewayService_AcceptFriendInvite_Handler,
+		},
+		{
+			MethodName: "DeleteFromFriend",
+			Handler:    _GatewayService_DeleteFromFriend_Handler,
 		},
 		{
 			MethodName: "DeclineFriendInvite",
