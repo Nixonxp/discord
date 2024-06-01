@@ -155,6 +155,7 @@ func main() {
 		ServerConn:  serverConn,
 		ChannelConn: channelConn,
 		ChatConn:    chatConn,
+		Log:         log,
 	})
 
 	srv, err := server.NewDiscordGatewayServiceServer(resourcesShutdownCtx, server.Deps{

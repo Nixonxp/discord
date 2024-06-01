@@ -44,7 +44,7 @@ func main() {
 	collection, err := mongoCollection.NewCollection(resourcesShutdownCtx,
 		MongoCollectionMessages,
 		&mongoCollection.Config{
-			MongoHost:     "mongodb-chat",
+			MongoHost:     "mongodb",
 			MongoDb:       "Chat",
 			MongoPort:     "27017",
 			MongoUser:     "root",

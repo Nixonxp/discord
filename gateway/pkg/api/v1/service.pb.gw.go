@@ -617,7 +617,7 @@ func request_GatewayService_SubscribeServer_0(ctx context.Context, marshaler run
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -643,7 +643,7 @@ func local_request_GatewayService_SubscribeServer_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -669,7 +669,7 @@ func request_GatewayService_UnsubscribeServer_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -695,7 +695,7 @@ func local_request_GatewayService_UnsubscribeServer_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -721,7 +721,7 @@ func request_GatewayService_SearchServerByUserId_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -747,7 +747,7 @@ func local_request_GatewayService_SearchServerByUserId_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -773,7 +773,7 @@ func request_GatewayService_InviteUserToServer_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -783,7 +783,7 @@ func request_GatewayService_InviteUserToServer_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -809,7 +809,7 @@ func local_request_GatewayService_InviteUserToServer_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -819,7 +819,7 @@ func local_request_GatewayService_InviteUserToServer_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.UserId, err = runtime.Uint64(val)
+	protoReq.UserId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
@@ -853,7 +853,7 @@ func request_GatewayService_PublishMessageOnServer_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -887,7 +887,7 @@ func local_request_GatewayService_PublishMessageOnServer_0(ctx context.Context, 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -913,7 +913,7 @@ func request_GatewayService_GetMessagesFromServer_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}
@@ -939,7 +939,7 @@ func local_request_GatewayService_GetMessagesFromServer_0(ctx context.Context, m
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "server_id")
 	}
 
-	protoReq.ServerId, err = runtime.Uint64(val)
+	protoReq.ServerId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "server_id", err)
 	}

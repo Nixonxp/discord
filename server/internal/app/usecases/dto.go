@@ -5,32 +5,31 @@ type CreateServerRequest struct {
 }
 
 type SearchServerRequest struct {
-	Id   uint64
 	Name string
 }
 
 type SubscribeServerRequest struct {
-	ServerId uint64
+	ServerId string
 }
 
 type UnsubscribeServerRequest struct {
-	ServerId uint64
+	ServerId string
 }
 
 type SearchServerByUserIdRequest struct {
-	UserId uint64
+	UserId string
 }
 
 type InviteUserToServerRequest struct {
-	UserId   uint64
-	ServerId uint64
+	UserId   string
+	ServerId string
 }
 
 type PublishMessageOnServerRequest struct {
-	ServerId uint64
+	ServerId string
 	Text     string
 }
 
 type GetMessagesFromServerRequest struct {
-	ServerId uint64
+	ServerId string
 }

@@ -174,64 +174,66 @@ message CreateServerRequest {
 }
 
 message CreateServerResponse {
-  uint64 id = 1 [json_name = "id"];
+  string id = 1 [json_name = "id"];
   string name = 2 [json_name = "name"];
+  string owner_id = 3 [json_name = "owner_id"];
 }
 
 message SearchServerRequest {
-  uint64 id = 1 [json_name = "id", (buf.validate.field).required = false, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
-  }];
-  string name = 2 [json_name = "name", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+  string name = 1 [json_name = "name", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"server name\""
   }];
 }
 
 message SubscribeServerRequest {
-  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string server_id = 1 [json_name = "server_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message UnsubscribeServerRequest {
-  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string server_id = 1 [json_name = "server_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message SearchServerResponse {
-  uint64 id = 1 [json_name = "id"];
+  repeated ServerInfo servers = 1 [json_name = "servers"];
+}
+
+message ServerInfo {
+  string id = 1 [json_name = "id"];
   string name = 2 [json_name = "name"];
 }
+
 
 message ErrorMessage {
   string message = 1 [json_name = "message"];
 }
 
 message SearchServerByUserIdRequest {
-  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message SearchServerByUserIdResponse {
-  uint64 id = 1 [json_name = "id"];
-  string name = 2 [json_name = "name"];
+  repeated string id = 1 [json_name = "id"];
 }
 
 message InviteUserToServerRequest {
-  uint64 user_id = 1 [json_name = "user_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 
-  uint64 server_id = 2 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string server_id = 2 [json_name = "server_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message PublishMessageOnServerRequest {
-  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string server_id = 1 [json_name = "server_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
   string text = 2 [json_name = "text", (buf.validate.field).required = false, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"message text\""
@@ -239,21 +241,21 @@ message PublishMessageOnServerRequest {
 }
 
 message GetMessagesFromServerRequest {
-  uint64 server_id = 1 [json_name = "server_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string server_id = 1 [json_name = "server_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message GetMessagesResponse {
-  repeated Message messages = 1;
+  repeated Message messages = 1 [json_name = "messages"];
 }
 
 message Message {
-  string id = 1;
-  string text = 2;
-  google.protobuf.Timestamp timestamp = 3;
-  string chat_id = 4;
-  string owner_id = 5;
+  string id = 1 [json_name = "id"];
+  string text = 2 [json_name = "text"];
+  google.protobuf.Timestamp timestamp = 3 [json_name = "timestamp"];
+  string chat_id = 4 [json_name = "chat_id"];
+  string owner_id = 5 [json_name = "owner_id"];
 }
 
 message AddChannelRequest {

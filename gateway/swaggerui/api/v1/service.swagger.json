@@ -929,8 +929,7 @@
             "name": "user_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -979,8 +978,7 @@
             "name": "server_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -1029,8 +1027,7 @@
             "name": "server_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -1079,15 +1076,13 @@
             "name": "server_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "user_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -1140,8 +1135,7 @@
             "name": "server_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           }
         ],
         "tags": [
@@ -1190,8 +1184,7 @@
             "name": "server_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
@@ -1389,10 +1382,12 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "string"
         },
         "name": {
+          "type": "string"
+        },
+        "owner_id": {
           "type": "string"
         }
       }
@@ -1523,10 +1518,10 @@
           "type": "string",
           "format": "date-time"
         },
-        "chatId": {
+        "chat_id": {
           "type": "string"
         },
-        "ownerId": {
+        "owner_id": {
           "type": "string"
         }
       }
@@ -1620,38 +1615,42 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "name": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
     "v1SearchServerRequest": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64",
-          "example": 1
-        },
         "name": {
           "type": "string",
           "example": "server name"
         }
       },
       "required": [
-        "id",
         "name"
       ]
     },
     "v1SearchServerResponse": {
       "type": "object",
       "properties": {
+        "servers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ServerInfo"
+          }
+        }
+      }
+    },
+    "v1ServerInfo": {
+      "type": "object",
+      "properties": {
         "id": {
-          "type": "string",
-          "format": "uint64"
+          "type": "string"
         },
         "name": {
           "type": "string"

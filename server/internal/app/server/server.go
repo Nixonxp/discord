@@ -6,11 +6,11 @@ import (
 	"github.com/Nixonxp/discord/server/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/server/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/server/pkg/grpc_utils"
+	log "github.com/Nixonxp/discord/server/pkg/logger"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 )
 
@@ -23,6 +23,7 @@ type Config struct {
 // Deps - server deps
 type Deps struct {
 	ServerUsecase usecases.UsecaseInterface
+	Log           *log.Logger
 }
 
 type ServerServer struct {
@@ -80,7 +81,7 @@ func UnaryInterceptorsToGrpcServerOptions(interceptors ...grpc.UnaryServerInterc
 }
 
 func (s *ServerServer) CreateServer(ctx context.Context, req *pb.CreateServerRequest) (*pb.CreateServerResponse, error) {
-	log.Printf("Create server: received: %s", req.GetName())
+	s.Log.WithContext(ctx).WithField("name", req.GetName()).Info("Create server: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -94,34 +95,41 @@ func (s *ServerServer) CreateServer(ctx context.Context, req *pb.CreateServerReq
 	}
 
 	return &pb.CreateServerResponse{
-		Id:   created.Id,
-		Name: created.Name,
+		Id:      created.Id.String(),
+		Name:    created.Name,
+		OwnerId: created.OwnerId.String(),
 	}, nil
 }
 
 func (s *ServerServer) SearchServer(ctx context.Context, req *pb.SearchServerRequest) (*pb.SearchServerResponse, error) {
-	log.Printf("Search server: received: %d", req.GetId())
+	s.Log.WithContext(ctx).WithField("name", req.GetName()).Info("Search server: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
 	result, err := s.ServerUsecase.SearchServer(ctx, usecases.SearchServerRequest{
-		Id:   req.GetId(),
 		Name: req.GetName(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	servers := make([]*pb.ServerInfo, len(result))
+	for i, srv := range result {
+		servers[i] = &pb.ServerInfo{
+			Id:   srv.Id.String(),
+			Name: srv.Name,
+		}
+	}
+
 	return &pb.SearchServerResponse{
-		Id:   result.Id,
-		Name: result.Name,
+		Servers: servers,
 	}, nil
 }
 
 func (s *ServerServer) SubscribeServer(ctx context.Context, req *pb.SubscribeServerRequest) (*pb.ActionResponse, error) {
-	log.Printf("Subscribe server: received: %d", req.GetServerId())
+	s.Log.WithContext(ctx).WithField("server id", req.GetServerId()).Info("Subscribe server: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -140,7 +148,7 @@ func (s *ServerServer) SubscribeServer(ctx context.Context, req *pb.SubscribeSer
 }
 
 func (s *ServerServer) UnsubscribeServer(ctx context.Context, req *pb.UnsubscribeServerRequest) (*pb.ActionResponse, error) {
-	log.Printf("Unsubscribe server: received: %d", req.GetServerId())
+	s.Log.WithContext(ctx).WithField("server id", req.GetServerId()).Info("Unsubscribe server: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -159,7 +167,7 @@ func (s *ServerServer) UnsubscribeServer(ctx context.Context, req *pb.Unsubscrib
 }
 
 func (s *ServerServer) SearchServerByUserId(ctx context.Context, req *pb.SearchServerByUserIdRequest) (*pb.SearchServerByUserIdResponse, error) {
-	log.Printf("Search server by user id: received: %d", req.GetUserId())
+	s.Log.WithContext(ctx).WithField("user id", req.GetUserId()).Info("Search server by user id")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -173,13 +181,12 @@ func (s *ServerServer) SearchServerByUserId(ctx context.Context, req *pb.SearchS
 	}
 
 	return &pb.SearchServerByUserIdResponse{
-		Id:   result.Id,
-		Name: result.Name,
+		Id: result,
 	}, nil
 }
 
 func (s *ServerServer) InviteUserToServer(ctx context.Context, req *pb.InviteUserToServerRequest) (*pb.ActionResponse, error) {
-	log.Printf("Invite user to server: received: %d", req.GetServerId())
+	s.Log.WithContext(ctx).WithField("server id", req.GetServerId()).Info("Invite user to server")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -199,7 +206,7 @@ func (s *ServerServer) InviteUserToServer(ctx context.Context, req *pb.InviteUse
 }
 
 func (s *ServerServer) PublishMessageOnServer(ctx context.Context, req *pb.PublishMessageOnServerRequest) (*pb.ActionResponse, error) {
-	log.Printf("Publish message to server: received: %s", req.GetText())
+	s.Log.WithContext(ctx).WithField("text", req.GetText()).Info("Publish message to server")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -219,7 +226,7 @@ func (s *ServerServer) PublishMessageOnServer(ctx context.Context, req *pb.Publi
 }
 
 func (s *ServerServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMessagesFromServerRequest) (*pb.GetMessagesResponse, error) {
-	log.Printf("Get messages from server: received: %d", req.GetServerId())
+	s.Log.WithContext(ctx).WithField("server id", req.GetServerId()).Info("Get messages from server")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -235,7 +242,7 @@ func (s *ServerServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMes
 	return &pb.GetMessagesResponse{
 		Messages: []*pb.Message{
 			{
-				Id:   result.Messages[0].Id,
+				Id:   "uuid todo",
 				Text: result.Messages[0].Text,
 				Timestamp: &timestamp.Timestamp{
 					Seconds: result.Messages[0].Timestamp.Unix(),

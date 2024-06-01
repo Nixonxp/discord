@@ -40,7 +40,7 @@ type ServerServiceClient interface {
 	SearchServerByUserId(ctx context.Context, in *SearchServerByUserIdRequest, opts ...grpc.CallOption) (*SearchServerByUserIdResponse, error)
 	InviteUserToServer(ctx context.Context, in *InviteUserToServerRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	PublishMessageOnServer(ctx context.Context, in *PublishMessageOnServerRequest, opts ...grpc.CallOption) (*ActionResponse, error)
-	GetMessagesFromServer(ctx context.Context, in *GetMessagesFromServerRequest, opts ...grpc.CallOption) (*GetMessagesFromServerResponse, error)
+	GetMessagesFromServer(ctx context.Context, in *GetMessagesFromServerRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 }
 
 type serverServiceClient struct {
@@ -114,8 +114,8 @@ func (c *serverServiceClient) PublishMessageOnServer(ctx context.Context, in *Pu
 	return out, nil
 }
 
-func (c *serverServiceClient) GetMessagesFromServer(ctx context.Context, in *GetMessagesFromServerRequest, opts ...grpc.CallOption) (*GetMessagesFromServerResponse, error) {
-	out := new(GetMessagesFromServerResponse)
+func (c *serverServiceClient) GetMessagesFromServer(ctx context.Context, in *GetMessagesFromServerRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
+	out := new(GetMessagesResponse)
 	err := c.cc.Invoke(ctx, ServerService_GetMessagesFromServer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ type ServerServiceServer interface {
 	SearchServerByUserId(context.Context, *SearchServerByUserIdRequest) (*SearchServerByUserIdResponse, error)
 	InviteUserToServer(context.Context, *InviteUserToServerRequest) (*ActionResponse, error)
 	PublishMessageOnServer(context.Context, *PublishMessageOnServerRequest) (*ActionResponse, error)
-	GetMessagesFromServer(context.Context, *GetMessagesFromServerRequest) (*GetMessagesFromServerResponse, error)
+	GetMessagesFromServer(context.Context, *GetMessagesFromServerRequest) (*GetMessagesResponse, error)
 	mustEmbedUnimplementedServerServiceServer()
 }
 
@@ -163,7 +163,7 @@ func (UnimplementedServerServiceServer) InviteUserToServer(context.Context, *Inv
 func (UnimplementedServerServiceServer) PublishMessageOnServer(context.Context, *PublishMessageOnServerRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishMessageOnServer not implemented")
 }
-func (UnimplementedServerServiceServer) GetMessagesFromServer(context.Context, *GetMessagesFromServerRequest) (*GetMessagesFromServerResponse, error) {
+func (UnimplementedServerServiceServer) GetMessagesFromServer(context.Context, *GetMessagesFromServerRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMessagesFromServer not implemented")
 }
 func (UnimplementedServerServiceServer) mustEmbedUnimplementedServerServiceServer() {}

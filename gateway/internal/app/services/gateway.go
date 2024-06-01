@@ -8,9 +8,9 @@ import (
 	pb_server "github.com/Nixonxp/discord/gateway/pkg/api/server"
 	pb_user "github.com/Nixonxp/discord/gateway/pkg/api/user"
 	pb "github.com/Nixonxp/discord/gateway/pkg/api/v1"
+	logger "github.com/Nixonxp/discord/gateway/pkg/logger"
 	"github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
-	"log"
 )
 
 type Deps struct {
@@ -19,6 +19,7 @@ type Deps struct {
 	ServerConn  *grpc.ClientConn
 	ChannelConn *grpc.ClientConn
 	ChatConn    *grpc.ClientConn
+	Log         *logger.Logger
 }
 
 type DiscordGatewayService struct {
@@ -70,7 +71,7 @@ func (s *DiscordGatewayService) Login(ctx context.Context, req *pb.LoginRequest)
 
 	loginResponse, err := authClient.Login(ctx, &loginReq)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("Login", req.GetLogin()).Error("login error")
 		return nil, err
 	}
 
@@ -91,7 +92,7 @@ func (s *DiscordGatewayService) OauthLogin(ctx context.Context, _ *pb.OauthLogin
 
 	loginResponse, err := authClient.OauthLogin(ctx, &loginReq)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).Error("oauth error")
 		return nil, err
 	}
 
@@ -111,7 +112,7 @@ func (s *DiscordGatewayService) OauthLoginCallback(ctx context.Context, req *pb.
 
 	loginResponse, err := authClient.OauthLoginCallback(ctx, &loginReq)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("Code", req.GetCode()).Error("oauth login error")
 		return nil, err
 	}
 
@@ -138,7 +139,7 @@ func (s *DiscordGatewayService) UpdateUser(ctx context.Context, req *pb.UpdateUs
 
 	response, err := userClient.UpdateUser(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("user_id", req.GetId()).Error("update user error")
 		return nil, err
 	}
 
@@ -162,7 +163,7 @@ func (s *DiscordGatewayService) GetUserByLogin(ctx context.Context, req *pb.GetU
 
 	response, err := userClient.GetUserByLogin(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("Login", req.GetLogin()).Error("get user by login error")
 		return nil, err
 	}
 
@@ -181,7 +182,7 @@ func (s *DiscordGatewayService) GetUserFriends(ctx context.Context, req *pb.GetU
 
 	response, err := userClient.GetUserFriends(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("user_id", "todo user id").Error("get user friends error")
 		return nil, err
 	}
 
@@ -214,7 +215,7 @@ func (s *DiscordGatewayService) AddToFriendByUserId(ctx context.Context, req *pb
 
 	response, err := userClient.AddToFriendByUserId(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("user_id", req.GetUserId()).Error("add to friend error")
 		return nil, err
 	}
 
@@ -234,7 +235,7 @@ func (s *DiscordGatewayService) AcceptFriendInvite(ctx context.Context, req *pb.
 
 	response, err := userClient.AcceptFriendInvite(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("InviteId", req.GetInviteId()).Error("accept user invite error")
 		return nil, err
 	}
 
@@ -254,7 +255,7 @@ func (s *DiscordGatewayService) DeclineFriendInvite(ctx context.Context, req *pb
 
 	response, err := userClient.DeclineFriendInvite(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("InviteId", req.GetInviteId()).Error("decline friend invite error")
 		return nil, err
 	}
 
@@ -272,7 +273,7 @@ func (s *DiscordGatewayService) GetUserInvites(ctx context.Context, req *pb.GetU
 
 	response, err := userClient.GetUserInvites(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("user_id", "todo user_id").Error("get user invites error")
 		return nil, err
 	}
 
@@ -302,7 +303,7 @@ func (s *DiscordGatewayService) DeleteFromFriend(ctx context.Context, req *pb.De
 
 	response, err := userClient.DeleteFromFriend(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("FriendId", req.GetFriendId()).Error("delete friend error")
 		return nil, err
 	}
 
@@ -322,13 +323,14 @@ func (s *DiscordGatewayService) CreateServer(ctx context.Context, req *pb.Create
 
 	response, err := serverClient.CreateServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("name", req.GetName()).Error("create server error")
 		return nil, err
 	}
 
 	return &pb.CreateServerResponse{
-		Id:   response.GetId(),
-		Name: req.GetName(),
+		Id:      response.GetId(),
+		Name:    response.GetName(),
+		OwnerId: response.GetOwnerId(),
 	}, nil
 }
 
@@ -343,13 +345,20 @@ func (s *DiscordGatewayService) SearchServer(ctx context.Context, req *pb.Search
 
 	response, err := serverClient.SearchServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("name", req.GetName()).Error("search server error")
 		return nil, err
 	}
 
+	serverList := make([]*pb.ServerInfo, len(response.GetServers()))
+	for i, server := range response.GetServers() {
+		serverList[i] = &pb.ServerInfo{
+			Id:   server.GetId(),
+			Name: server.GetName(),
+		}
+	}
+
 	return &pb.SearchServerResponse{
-		Id:   response.GetId(),
-		Name: response.GetName(),
+		Servers: serverList,
 	}, nil
 }
 
@@ -364,7 +373,7 @@ func (s *DiscordGatewayService) SubscribeServer(ctx context.Context, req *pb.Sub
 
 	response, err := serverClient.SubscribeServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ServerId", req.GetServerId()).Error("subscribe server error")
 		return nil, err
 	}
 
@@ -384,7 +393,7 @@ func (s *DiscordGatewayService) UnsubscribeServer(ctx context.Context, req *pb.U
 
 	response, err := serverClient.UnsubscribeServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ServerId", req.GetServerId()).Error("unsubscribe server error")
 		return nil, err
 	}
 
@@ -404,13 +413,12 @@ func (s *DiscordGatewayService) SearchServerByUserId(ctx context.Context, req *p
 
 	response, err := serverClient.SearchServerByUserId(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("UserId", req.GetUserId()).Error("search server error")
 		return nil, err
 	}
 
 	return &pb.SearchServerByUserIdResponse{
-		Id:   response.GetId(),
-		Name: response.GetName(),
+		Id: response.GetId(),
 	}, nil
 }
 
@@ -426,7 +434,7 @@ func (s *DiscordGatewayService) InviteUserToServer(ctx context.Context, req *pb.
 
 	response, err := serverClient.InviteUserToServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("UserId", req.GetUserId()).Error("invite server error")
 		return nil, err
 	}
 
@@ -447,7 +455,7 @@ func (s *DiscordGatewayService) PublishMessageOnServer(ctx context.Context, req 
 
 	response, err := serverClient.PublishMessageOnServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ServerId", req.GetServerId()).Error("send server message error")
 		return nil, err
 	}
 
@@ -467,7 +475,7 @@ func (s *DiscordGatewayService) GetMessagesFromServer(ctx context.Context, req *
 
 	response, err := serverClient.GetMessagesFromServer(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ServerId", req.GetServerId()).Error("get server messages error")
 		return nil, err
 	}
 
@@ -496,7 +504,7 @@ func (s *DiscordGatewayService) AddChannel(ctx context.Context, req *pb.AddChann
 
 	response, err := channelClient.AddChannel(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("name", req.GetName()).Error("add channel error")
 		return nil, err
 	}
 
@@ -516,7 +524,7 @@ func (s *DiscordGatewayService) DeleteChannel(ctx context.Context, req *pb.Delet
 
 	response, err := channelClient.DeleteChannel(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ChannelId", req.GetChannelId()).Error("delete channel error")
 		return nil, err
 	}
 
@@ -536,7 +544,7 @@ func (s *DiscordGatewayService) JoinChannel(ctx context.Context, req *pb.JoinCha
 
 	response, err := channelClient.JoinChannel(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ChannelId", req.GetChannelId()).Error("join channel error")
 		return nil, err
 	}
 
@@ -556,7 +564,7 @@ func (s *DiscordGatewayService) LeaveChannel(ctx context.Context, req *pb.LeaveC
 
 	response, err := channelClient.LeaveChannel(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("ChannelId", req.GetChannelId()).Error("leave channel error")
 		return nil, err
 	}
 
@@ -577,7 +585,7 @@ func (s *DiscordGatewayService) SendUserPrivateMessage(ctx context.Context, req 
 
 	response, err := chatClient.SendUserPrivateMessage(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("UserId", req.GetUserId()).Error("send user private message error")
 		return nil, err
 	}
 
@@ -597,7 +605,7 @@ func (s *DiscordGatewayService) GetUserPrivateMessages(ctx context.Context, req 
 
 	response, err := chatClient.GetUserPrivateMessages(ctx, &request)
 	if err != nil {
-		log.Println(err)
+		s.Log.WithContext(ctx).WithError(err).WithField("UserId", req.GetUserId()).Error("get user private messages error")
 		return nil, err
 	}
 
