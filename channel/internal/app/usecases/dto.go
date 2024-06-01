@@ -5,13 +5,13 @@ type AddChannelRequest struct {
 }
 
 type DeleteChannelRequest struct {
-	ChannelId uint64
+	ChannelId string
 }
 
 type JoinChannelRequest struct {
-	ChannelId uint64
+	ChannelId string
 }
 
 type LeaveChannelRequest struct {
-	ChannelId uint64
+	ChannelId string
 }

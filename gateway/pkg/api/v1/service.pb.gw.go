@@ -999,7 +999,7 @@ func request_GatewayService_DeleteChannel_0(ctx context.Context, marshaler runti
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}
@@ -1025,7 +1025,7 @@ func local_request_GatewayService_DeleteChannel_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}
@@ -1051,7 +1051,7 @@ func request_GatewayService_JoinChannel_0(ctx context.Context, marshaler runtime
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}
@@ -1077,7 +1077,7 @@ func local_request_GatewayService_JoinChannel_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}
@@ -1103,7 +1103,7 @@ func request_GatewayService_LeaveChannel_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}
@@ -1129,7 +1129,7 @@ func local_request_GatewayService_LeaveChannel_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "channel_id")
 	}
 
-	protoReq.ChannelId, err = runtime.Uint64(val)
+	protoReq.ChannelId, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "channel_id", err)
 	}

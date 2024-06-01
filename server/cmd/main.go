@@ -94,11 +94,13 @@ func main() {
 	globalLimiter := rate_limiter.NewRateLimiter(1000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
-			middleware.ErrorsUnaryInterceptor(),
 			ratelimit.UnaryServerInterceptor(globalLimiter),
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_opentracing.OpenTracingServerInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
 			middleware_tracing.DebugOpenTracingUnaryServerInterceptor(true, true),
+		},
+		UnaryInterceptors: []grpc.UnaryServerInterceptor{
+			middleware.ErrorsUnaryInterceptor(),
 		},
 	}
 

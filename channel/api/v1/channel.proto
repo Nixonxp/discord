@@ -23,13 +23,13 @@ message ActionResponse {
 }
 
 message DeleteChannelRequest {
-  uint64 channel_id = 1;
+  string channel_id = 1;
 }
 
 message JoinChannelRequest {
-  uint64 channel_id = 1;
+  string channel_id = 1;
 }
 
 message LeaveChannelRequest {
-  uint64 channel_id = 1;
+  string channel_id = 1;
 }

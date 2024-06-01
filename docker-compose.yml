@@ -62,6 +62,15 @@ services:
     build:
       context: ./channel
       dockerfile: ./build/Dockerfile
+    environment:
+      MONGO_DB: "discord"
+      MONGO_HOST: "mongodb"
+      MONGO_PORT: 27017
+      MONGO_USER: "discord"
+      MONGO_PASSWORD: "example"
+    networks:
+      - mongodb
+      - tracing
 
   chat:
     build:

@@ -13,5 +13,12 @@ type UsecaseInterface interface {
 }
 
 type ChannelStorage interface {
-	CreateChannel(ctx context.Context, channel models.Channel) (*models.Channel, error)
+	CreateChannel(ctx context.Context, channel models.Channel) error
+	GetChannelById(ctx context.Context, id models.ChannelID) (*models.Channel, error)
+	DeleteChannel(ctx context.Context, channelId models.ChannelID) error
+}
+
+type SubscribeStorage interface {
+	CreateSubscribe(ctx context.Context, subscribe models.SubscribeInfo) error
+	DeleteSubscribe(ctx context.Context, channelId models.ChannelID, userId models.UserID) error
 }

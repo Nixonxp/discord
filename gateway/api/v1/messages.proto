@@ -265,20 +265,20 @@ message AddChannelRequest {
 }
 
 message DeleteChannelRequest {
-  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message JoinChannelRequest {
-  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 
 message LeaveChannelRequest {
-  uint64 channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    example: "1"
+  string channel_id = 1 [json_name = "channel_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
 

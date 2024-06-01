@@ -5,11 +5,10 @@ import (
 	"github.com/Nixonxp/discord/channel/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/channel/pkg/api/v1"
 	grpcutils "github.com/Nixonxp/discord/channel/pkg/grpc_utils"
-	"log"
 )
 
 func (s *ChannelServer) AddChannel(ctx context.Context, req *pb.AddChannelRequest) (*pb.ActionResponse, error) {
-	log.Printf("add channel: received: %s", req.GetName())
+	s.Log.WithContext(ctx).WithField("name", req.GetName()).Info("add channel: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -28,7 +27,7 @@ func (s *ChannelServer) AddChannel(ctx context.Context, req *pb.AddChannelReques
 }
 
 func (s *ChannelServer) DeleteChannel(ctx context.Context, req *pb.DeleteChannelRequest) (*pb.ActionResponse, error) {
-	log.Printf("Delete channel: received: %d", req.GetChannelId())
+	s.Log.WithContext(ctx).WithField("id", req.GetChannelId()).Info("Delete channel: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -47,7 +46,7 @@ func (s *ChannelServer) DeleteChannel(ctx context.Context, req *pb.DeleteChannel
 }
 
 func (s *ChannelServer) JoinChannel(ctx context.Context, req *pb.JoinChannelRequest) (*pb.ActionResponse, error) {
-	log.Printf("Join channel: received: %d", req.GetChannelId())
+	s.Log.WithContext(ctx).WithField("id", req.GetChannelId()).Info("Join channel: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
@@ -66,7 +65,7 @@ func (s *ChannelServer) JoinChannel(ctx context.Context, req *pb.JoinChannelRequ
 }
 
 func (s *ChannelServer) LeaveChannel(ctx context.Context, req *pb.LeaveChannelRequest) (*pb.ActionResponse, error) {
-	log.Printf("Leave channel: received: %d", req.GetChannelId())
+	s.Log.WithContext(ctx).WithField("id", req.GetChannelId()).Info("Leave channel: received")
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
