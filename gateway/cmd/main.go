@@ -41,6 +41,7 @@ func main() {
 	config := application.Config{
 		GRPCGatewayPort:   ":8080",
 		SwaggerUIHTTPPort: ":8081",
+		DebugPort:         ":8084",
 	}
 
 	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
@@ -48,9 +49,11 @@ func main() {
 		panic("error init logger")
 	}
 
-	if err := jaeger_tracing.Init("gateway service"); err != nil {
+	closer, err := jaeger_tracing.Init("gateway service")
+	if err != nil {
 		log.Fatal(ctx, err)
 	}
+	defer closer(resourcesShutdownCtx)
 
 	retryOpts := []grpcretry.CallOption{
 		grpcretry.WithCodes(codes.Canceled, codes.Aborted, codes.DeadlineExceeded),
@@ -172,7 +175,7 @@ func main() {
 	}
 
 	httpServer := &http.Server{
-		Handler: middleware.TracingWrapper(middleware.AllowCORS(mux)),
+		Handler: middleware.PrometheusMiddleware(middleware.TracingWrapper(middleware.AllowCORS(mux))),
 	}
 
 	app, err := application.NewApp(&config)

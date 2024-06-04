@@ -4,11 +4,12 @@ import (
 	"context"
 	"os"
 
-	"github.com/Balun-courses/microservices_like_in_bigtech/lecture_11/orders_management_system/pkg/closer"
 	"github.com/uber/jaeger-client-go/config"
 )
 
-func Init(serviceName string) error {
+type CloseFunc func(ctx context.Context) error
+
+func Init(serviceName string) (CloseFunc, error) {
 	cfg := config.Configuration{
 		Sampler: &config.SamplerConfig{
 			Type:  "const",
@@ -21,12 +22,10 @@ func Init(serviceName string) error {
 
 	close, err := cfg.InitGlobalTracer(serviceName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	closer.Add(func(ctx context.Context) error {
+	return func(ctx context.Context) error {
 		return close.Close()
-	})
-
-	return nil
+	}, nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -14,6 +15,7 @@ import (
 	"math/rand/v2"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"time"
 )
 
@@ -23,6 +25,7 @@ type Config struct {
 	GRPCGatewayPort   string
 	HTTPPort          string
 	SwaggerUIHTTPPort string
+	DebugPort         string
 }
 
 type App struct {
@@ -31,6 +34,7 @@ type App struct {
 	httpListener      *echo.Echo
 	swaggerUISrv      *http.Server
 	gatewayHttpServer *http.Server
+	debugSrv          *http.Server
 }
 
 func NewApp(cfg *Config) (App, error) {
@@ -78,11 +82,30 @@ func NewApp(cfg *Config) (App, error) {
 		}
 	}
 
-	return App{
+	app := App{
 		cfg:          cfg,
 		httpListener: e,
 		swaggerUISrv: uiSrv,
-	}, nil
+	}
+
+	if cfg.DebugPort != "" {
+		{
+			mux := http.NewServeMux()
+			// prometheus metrics
+			mux.Handle("/metrics", promhttp.Handler())
+			// pprof
+			mux.HandleFunc("/debug/pprof/", pprof.Index)
+			mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+			mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+			mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+			mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+			httpServer := &http.Server{Handler: mux}
+			app.debugSrv = httpServer
+		}
+	}
+
+	return app, nil
 }
 
 func (a *App) AddGatewayServer(srv *http.Server) *App {
@@ -134,6 +157,29 @@ func (a *App) Run(ctx context.Context, srv *grpc.Server) error {
 			defer cancel()
 
 			return a.httpListener.Shutdown(shutdownCtx)
+		})
+	}
+
+	if a.cfg.DebugPort != "" {
+		group.Go(func() error {
+			log.Println(ctx, "start serve debug", a.cfg.DebugPort)
+
+			lis, err := net.Listen("tcp", a.cfg.DebugPort)
+			if err != nil {
+				return fmt.Errorf("server: failed to listen debug: %v", err)
+			}
+
+			go func() {
+				if err := a.debugSrv.Serve(lis); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("server: debug serve internal: %v", err)
+				}
+			}()
+
+			<-ctx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+
+			return a.debugSrv.Shutdown(shutdownCtx)
 		})
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/Nixonxp/discord/auth/internal/app/services/user"
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/auth/internal/middleware/errors"
+	middleware_metrics "github.com/Nixonxp/discord/auth/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/auth/internal/middleware/tracing"
 	pb "github.com/Nixonxp/discord/auth/pkg/api/v1"
 	"github.com/Nixonxp/discord/auth/pkg/application"
@@ -40,13 +41,18 @@ func main() {
 		panic("error init logger")
 	}
 
-	if err := jaeger_tracing.Init("auth service"); err != nil {
+	resourcesShutdownCtx, resourcesShutdownCtxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	closer, err := jaeger_tracing.Init("auth service")
+	if err != nil {
 		log.Fatal(ctx, err)
 	}
+	defer closer(resourcesShutdownCtx)
 
 	config := application.Config{
-		GRPCPort: ":8080",
-		HTTPPort: ":8081",
+		GRPCPort:  ":8080",
+		HTTPPort:  ":8081",
+		DebugPort: ":8084",
 	}
 
 	retryOpts := []grpcretry.CallOption{
@@ -90,16 +96,19 @@ func main() {
 	globalLimiter := rate_limiter.NewRateLimiter(1000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
-			middleware.ErrorsUnaryInterceptor(),
 			ratelimit.UnaryServerInterceptor(globalLimiter),
 			methodLimiter.GetInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_opentracing.OpenTracingServerInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
 			middleware_tracing.DebugOpenTracingUnaryServerInterceptor(true, true),
+			middleware_metrics.MetricsUnaryInterceptor(),
+		},
+		UnaryInterceptors: []grpc.UnaryServerInterceptor{
+			middleware.ErrorsUnaryInterceptor(),
 		},
 	}
 
-	srv, err := server.NewAuthServer(ctx, server.Deps{
+	srv, err := server.NewAuthServer(resourcesShutdownCtx, server.Deps{
 		AuthUsecase: authUsecase,
 		Log:         log,
 	})
@@ -120,6 +129,10 @@ func main() {
 	}
 
 	log.Print("servers is stopped")
+
+	log.Print("wait shutdown resources")
+	resourcesShutdownCtxCancel()
+	time.Sleep(time.Second * 5)
 
 	defer log.Print("app is stopped")
 }

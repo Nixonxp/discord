@@ -7,6 +7,7 @@ import (
 	"github.com/Nixonxp/discord/channel/internal/app/server"
 	"github.com/Nixonxp/discord/channel/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/channel/internal/middleware/errors"
+	middleware_metrics "github.com/Nixonxp/discord/channel/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/channel/internal/middleware/tracing"
 	pb "github.com/Nixonxp/discord/channel/pkg/api/v1"
 	"github.com/Nixonxp/discord/channel/pkg/application"
@@ -37,8 +38,9 @@ func main() {
 	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
-		GRPCPort: ":8080",
-		HTTPPort: ":8081",
+		GRPCPort:  ":8080",
+		HTTPPort:  ":8081",
+		DebugPort: ":8084",
 	}
 
 	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
@@ -46,9 +48,11 @@ func main() {
 		panic("error init logger")
 	}
 
-	if err := jaeger_tracing.Init("channel service"); err != nil {
+	closer, err := jaeger_tracing.Init("channel service")
+	if err != nil {
 		log.Fatal(ctx, err)
 	}
+	defer closer(resourcesShutdownCtx)
 
 	app, err := application.NewApp(&config)
 	if err != nil {
@@ -85,6 +89,7 @@ func main() {
 			grpc_recovery.UnaryServerInterceptor(),
 			grpc_opentracing.OpenTracingServerInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
 			middleware_tracing.DebugOpenTracingUnaryServerInterceptor(true, true),
+			middleware_metrics.MetricsUnaryInterceptor(),
 		},
 		UnaryInterceptors: []grpc.UnaryServerInterceptor{
 			middleware.ErrorsUnaryInterceptor(),

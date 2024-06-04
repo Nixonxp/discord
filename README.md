@@ -27,3 +27,17 @@ $ make restart
 
 ## Tracing
 http://localhost:16686/
+
+## Prometheus
+
+1. http://localhost:9091/
+
+## Grafana
+
+1. http://localhost:3000/
+2. See more: https://grafana.com/grafana/dashboards/
+
+## Pprof
+
+1. `brew install graphviz`
+2. http://localhost:8084/debug/pprof/

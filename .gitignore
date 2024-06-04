@@ -6,3 +6,4 @@ bin/
 *.out
 .env
 */vendor
+docker/
