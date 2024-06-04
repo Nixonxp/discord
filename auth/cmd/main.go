@@ -89,11 +89,11 @@ func main() {
 
 	// limiter per method
 	methodLimiter := pkg_middleware.NewMethodRateLimiterInterceptor(
-		pkg_middleware.NewMethodLimiterInfo("register", 100),
-		pkg_middleware.NewMethodLimiterInfo("login", 500),
+		pkg_middleware.NewMethodLimiterInfo("register", 10000),
+		pkg_middleware.NewMethodLimiterInfo("login", 50000),
 	)
 
-	globalLimiter := rate_limiter.NewRateLimiter(1000)
+	globalLimiter := rate_limiter.NewRateLimiter(100000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
 			ratelimit.UnaryServerInterceptor(globalLimiter),

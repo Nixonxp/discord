@@ -65,12 +65,11 @@ func main() {
 		circuitbreaker.WithClock(clock.New()),
 		circuitbreaker.WithFailOnContextCancel(true),
 		circuitbreaker.WithFailOnContextDeadline(true),
-		circuitbreaker.WithHalfOpenMaxSuccesses(100),
+		circuitbreaker.WithHalfOpenMaxSuccesses(1000),
 		circuitbreaker.WithOpenTimeoutBackOff(backoff.NewExponentialBackOff()),
 		circuitbreaker.WithOpenTimeout(10*time.Second),
 		circuitbreaker.WithCounterResetInterval(10*time.Second),
-		// we also have NewTripFuncThreshold and NewTripFuncConsecutiveFailures
-		circuitbreaker.WithTripFunc(circuitbreaker.NewTripFuncFailureRate(100, 0.1)),
+		circuitbreaker.WithTripFunc(circuitbreaker.NewTripFuncFailureRate(10000, 0.1)),
 		circuitbreaker.WithOnStateChangeHookFn(func(from, to circuitbreaker.State) {
 			log.Printf("state changed from %s to %s\n", from, to)
 		}),

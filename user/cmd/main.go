@@ -88,7 +88,7 @@ func main() {
 		TransactionManager: txManager,
 	})
 
-	globalLimiter := rate_limiter.NewRateLimiter(1000)
+	globalLimiter := rate_limiter.NewRateLimiter(10000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
 			ratelimit.UnaryServerInterceptor(globalLimiter),
