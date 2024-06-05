@@ -26,8 +26,11 @@ WORKDIR /
 COPY --from=build /bin/main /main
 COPY --from=build /app/swaggerui /swaggerui
 
+# Copy cert and key
+COPY ./../cert ./cert
+
 # Указываем какой порт необходимо слушать
 # https://docs.docker.com/reference/dockerfile/#expose
-EXPOSE 8080 8081
+EXPOSE 8080 8081 8443
 
 ENTRYPOINT ["/main"]

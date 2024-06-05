@@ -9,7 +9,7 @@
       "name": "GatewayService"
     }
   ],
-  "host": "localhost:8800",
+  "host": "localhost:8443",
   "schemes": [
     "http",
     "https"

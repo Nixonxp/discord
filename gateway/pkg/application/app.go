@@ -205,13 +205,8 @@ func (a *App) Run(ctx context.Context, srv *grpc.Server) error {
 	if a.cfg.GRPCGatewayPort != "" && a.gatewayHttpServer != nil {
 		group.Go(func() error {
 			log.Println("start server", a.cfg.GRPCGatewayPort)
-			lis, err := net.Listen("tcp", a.cfg.GRPCGatewayPort)
-			if err != nil {
-				return fmt.Errorf("server: failed to listen: %v", err)
-			}
-
 			go func() {
-				if err := a.gatewayHttpServer.Serve(lis); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				if err := a.gatewayHttpServer.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Fatalf("server: serve grpc gateway: %v", err)
 				}
 			}()

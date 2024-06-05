@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/Nixonxp/discord/gateway/internal/app/server"
 	"github.com/Nixonxp/discord/gateway/internal/app/services"
@@ -22,11 +24,46 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
+
+const (
+	port           = ":8443"
+	certFilePath   = "./cert/server-cert.crt"
+	keyFilePath    = "./cert/server-key.key"
+	caCertFilePath = "./cert/ca-cert.crt"
+)
+
+func CreateServerTLSConfig(caCertFilePath, certFile, keyFile string) (*tls.Config, error) {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load x509: %v", err)
+	}
+
+	clientCA, err := os.ReadFile(caCertFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	clientCAs := x509.NewCertPool()
+	if !clientCAs.AppendCertsFromPEM(clientCA) {
+		return nil, fmt.Errorf("failed to add client CA's certificate")
+	}
+
+	// Create tls config
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    clientCAs,
+	}
+
+	return tlsConfig, nil
+}
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(),
@@ -38,8 +75,13 @@ func main() {
 	resourcesShutdownCtx, resourcesShutdownCtxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer resourcesShutdownCtxCancel()
 
+	tlsConfig, err := CreateServerTLSConfig(caCertFilePath, certFilePath, keyFilePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	config := application.Config{
-		GRPCGatewayPort:   ":8080",
+		GRPCGatewayPort:   port,
 		SwaggerUIHTTPPort: ":8081",
 		DebugPort:         ":8084",
 	}
@@ -174,7 +216,9 @@ func main() {
 	}
 
 	httpServer := &http.Server{
-		Handler: middleware.PrometheusMiddleware(middleware.TracingWrapper(middleware.AllowCORS(mux))),
+		Handler:   middleware.PrometheusMiddleware(middleware.TracingWrapper(middleware.AllowCORS(mux))),
+		TLSConfig: tlsConfig,
+		Addr:      port,
 	}
 
 	app, err := application.NewApp(&config)
