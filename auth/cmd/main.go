@@ -83,8 +83,8 @@ func main() {
 	}
 
 	oauthConfig := oauth2.Config{
-		ClientID:     "586587681748-68glr3bqvfu64q5jks769ba78pjhp309.apps.googleusercontent.com", // todo to env file
-		ClientSecret: "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",
+		ClientID:     "{ClientID secret code}", // todo to env file
+		ClientSecret: "{ClientSecret secret code}",
 		RedirectURL:  "https://localhost:8443/api/v1/oauth/callback",
 		Scopes:       []string{"profile", "email"},
 		Endpoint:     google.Endpoint,
