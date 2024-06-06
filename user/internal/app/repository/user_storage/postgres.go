@@ -106,6 +106,32 @@ func (r *PGUserRepository) GetUserByLogin(ctx context.Context, login string) (*m
 	return resultUser, nil
 }
 
+func (r *PGUserRepository) GetUserByOauthId(ctx context.Context, oauthId string) (*models.User, error) {
+	query := sq.Select(columns()...).
+		From(userTable).
+		Where(sq.Eq{"oauth_id": oauthId}).
+		PlaceholderFormat(sq.Dollar)
+
+	user := &userRow{}
+	if err := r.driver.GetQueryEngine(ctx).Getx(ctx, user, query); err != nil {
+		if err.Error() == ErrNoRows.Error() {
+			r.ctxLog(ctx).WithError(err).WithField("oauth_id", oauthId).Error("user not found in repository")
+			return nil, pkgerrors.Wrap("user not found", models.ErrNotFound)
+		}
+
+		r.ctxLog(ctx).WithError(err).WithField("oauth_id", oauthId).Error("get user exec error repo")
+		return nil, err
+	}
+
+	resultUser, err := newUserModelsFromUserRow(user)
+	if err != nil {
+		r.ctxLog(ctx).WithError(err).WithField("oauth_id", oauthId).Error("error map row to user model")
+		return nil, err
+	}
+
+	return resultUser, nil
+}
+
 func (r *PGUserRepository) GetUserById(ctx context.Context, userId models.UserID) (*models.User, error) {
 	query := sq.Select(columns()...).
 		From(userTable).

@@ -76,10 +76,28 @@ func (s *DiscordGatewayService) Login(ctx context.Context, req *pb.LoginRequest)
 	}
 
 	return &pb.LoginResponse{
-		UserId: loginResponse.GetUserId(),
-		Login:  loginResponse.GetLogin(),
-		Name:   loginResponse.GetName(),
-		Token:  loginResponse.GetToken(),
+		Token:        loginResponse.GetToken(),
+		RefreshToken: loginResponse.GetRefreshToken(),
+	}, nil
+}
+
+func (s *DiscordGatewayService) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	authClient := pb_auth.NewAuthServiceClient(s.AuthConn)
+	refreshReq := pb_auth.RefreshRequest{
+		RefreshToken: req.RefreshToken,
+	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.Refresh")
+	defer span.Finish()
+
+	loginResponse, err := authClient.Refresh(ctx, &refreshReq)
+	if err != nil {
+		s.Log.WithContext(ctx).WithError(err).WithField("token", req.RefreshToken).Error("refresh error")
+		return nil, err
+	}
+
+	return &pb.RefreshResponse{
+		Token: loginResponse.GetToken(),
 	}, nil
 }
 
@@ -104,7 +122,8 @@ func (s *DiscordGatewayService) OauthLogin(ctx context.Context, _ *pb.OauthLogin
 func (s *DiscordGatewayService) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginCallbackRequest) (*pb.OauthLoginCallbackResponse, error) {
 	authClient := pb_auth.NewAuthServiceClient(s.AuthConn)
 	loginReq := pb_auth.OauthLoginCallbackRequest{
-		Code: req.GetCode(),
+		Code:  req.GetCode(),
+		State: req.GetState(),
 	}
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "auth_service.OauthLoginCallback")
@@ -117,10 +136,8 @@ func (s *DiscordGatewayService) OauthLoginCallback(ctx context.Context, req *pb.
 	}
 
 	return &pb.OauthLoginCallbackResponse{
-		UserId: loginResponse.GetUserId(),
-		Login:  loginResponse.GetLogin(),
-		Name:   loginResponse.GetName(),
-		Token:  loginResponse.GetToken(),
+		Token:        loginResponse.GetToken(),
+		RefreshToken: loginResponse.GetRefreshToken(),
 	}, nil
 }
 

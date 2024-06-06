@@ -38,6 +38,12 @@ func ErrorsUnaryInterceptor(log *log.Logger) grpc.UnaryServerInterceptor {
 		case errors.Is(err, models.ErrCredInvalid):
 			log.WithContext(ctx).WithError(err).Warn("error invalid credentials")
 			err = status.Error(codes.Unauthenticated, err.Error())
+		case errors.Is(err, models.Unauthenticated):
+			log.WithContext(ctx).WithError(err).Warn("error invalid credentials")
+			err = status.Error(codes.Unauthenticated, err.Error())
+		case errors.Is(err, models.PermissionDenied):
+			log.WithContext(ctx).WithError(err).Warn("error permission denied")
+			err = status.Error(codes.PermissionDenied, err.Error())
 		default:
 			log.WithContext(ctx).WithError(err).Error("internal error")
 			err = status.Error(codes.Internal, err.Error())

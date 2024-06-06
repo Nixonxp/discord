@@ -5,7 +5,8 @@ option go_package = "api/user";
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (UserDataResponse) {}
-  rpc GetUserByLoginAndPassword(GetUserByLoginAndPasswordRequest) returns (UserDataResponse) {}
+  rpc GetUserForLogin(GetUserForLoginRequest) returns (GetUserForLoginResponse) {}
+  rpc CreateOrGetUser(CreateOrGetUserRequest) returns (UserDataResponse) {}
 }
 
 message CreateUserRequest {
@@ -23,7 +24,23 @@ message UserDataResponse {
   string avatar_photo_url = 6;
 }
 
-message GetUserByLoginAndPasswordRequest {
+message GetUserForLoginResponse {
+  string id = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+  string password = 6;
+}
+
+message GetUserForLoginRequest {
   string login = 1;
-  string password = 2;
+}
+
+message CreateOrGetUserRequest {
+  string login = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  string avatar_photo_url = 5;
+  string oauthId = 6;
 }

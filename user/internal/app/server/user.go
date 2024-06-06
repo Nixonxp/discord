@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"github.com/Nixonxp/discord/user/internal/app/models"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
+	auth "github.com/Nixonxp/discord/user/pkg/auth"
 	grpcutils "github.com/Nixonxp/discord/user/pkg/grpc_utils"
 	log "github.com/Nixonxp/discord/user/pkg/logger"
 )
@@ -34,27 +36,26 @@ func (s *UserServer) CreateUser(ctx context.Context, req *pb.CreateUserRequest) 
 	}, nil
 }
 
-func (s *UserServer) GetUserByLoginAndPassword(ctx context.Context, req *pb.GetUserByLoginAndPasswordRequest) (*pb.UserDataResponse, error) {
-	s.ctxLog(ctx).Infof("get user by login: received: %s", req.Login)
+func (s *UserServer) GetUserForLogin(ctx context.Context, req *pb.GetUserForLoginRequest) (*pb.GetUserForLoginResponse, error) {
+	s.ctxLog(ctx).Infof("get user for login: received: %s", req.Login)
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	result, err := s.UserUsecase.GetUserByLoginAndPassword(ctx, usecases.GetUserByLoginAndPasswordRequest{
-		Login:    req.Login,
-		Password: req.Password,
+	result, err := s.UserUsecase.GetUserForLogin(ctx, usecases.GetUserByLoginRequest{
+		Login: req.Login,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.UserDataResponse{
-		Id:             result.Id.String(),
-		Login:          result.Login,
-		Name:           result.Name,
-		Email:          result.Email,
-		AvatarPhotoUrl: "url", // todo add
+	return &pb.GetUserForLoginResponse{
+		Id:       result.Id.String(),
+		Login:    result.Login,
+		Name:     result.Name,
+		Email:    result.Email,
+		Password: result.Password,
 	}, nil
 }
 
@@ -65,12 +66,18 @@ func (s *UserServer) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) 
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.UpdateUser(ctx, usecases.UpdateUserRequest{
 		Id:             req.Id,
 		Login:          req.Login,
 		Name:           req.Name,
 		Email:          req.Email,
 		AvatarPhotoUrl: req.AvatarPhotoUrl,
+		CurrentUserId:  userId,
 	})
 	if err != nil {
 		return nil, err
@@ -90,6 +97,11 @@ func (s *UserServer) GetUserByLogin(ctx context.Context, req *pb.GetUserByLoginR
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	_, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
 	}
 
 	result, err := s.UserUsecase.GetUserByLogin(ctx, usecases.GetUserByLoginRequest{
@@ -116,7 +128,14 @@ func (s *UserServer) GetUserFriends(ctx context.Context, req *pb.GetUserFriendsR
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	result, err := s.UserUsecase.GetUserFriends(ctx, usecases.GetUserFriendsRequest{})
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
+	result, err := s.UserUsecase.GetUserFriends(ctx, usecases.GetUserFriendsRequest{
+		UserId: userId,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -143,8 +162,13 @@ func (s *UserServer) GetUserInvites(ctx context.Context, req *pb.GetUserInvitesR
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.GetUserInvites(ctx, usecases.GetUserInvitesRequest{
-		UserId: "4aee4258-1cdd-11ef-b2b5-4612de44ab9f", // todo from auth data,
+		UserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -167,13 +191,18 @@ func (s *UserServer) GetUserInvites(ctx context.Context, req *pb.GetUserInvitesR
 
 func (s *UserServer) AddToFriendByUserId(ctx context.Context, req *pb.AddToFriendByUserIdRequest) (*pb.ActionResponse, error) {
 	s.ctxLog(ctx).Infof("add user to friends received: %d", req.UserId)
-
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.AddToFriendByUserId(ctx, usecases.AddToFriendByUserIdRequest{
-		UserId: req.UserId,
+		UserId:  req.UserId,
+		OwnerId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -184,6 +213,34 @@ func (s *UserServer) AddToFriendByUserId(ctx context.Context, req *pb.AddToFrien
 	}, nil
 }
 
+func (s *UserServer) CreateOrGetUser(ctx context.Context, req *pb.CreateOrGetUserRequest) (*pb.UserDataResponse, error) {
+	s.ctxLog(ctx).Infof("create or get user: received: %s", req.Login)
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	result, err := s.UserUsecase.CreateOrGetUser(ctx, usecases.CreateOrGetUserRequest{
+		Login:          req.Login,
+		Name:           req.Name,
+		Email:          req.Email,
+		Password:       req.Password,
+		OauthId:        req.OauthId,
+		AvatarPhotoUrl: req.AvatarPhotoUrl,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UserDataResponse{
+		Id:             result.Id.String(),
+		Login:          result.Login,
+		Name:           result.Name,
+		Email:          result.Email,
+		AvatarPhotoUrl: result.AvatarPhotoUrl,
+	}, nil
+}
+
 func (s *UserServer) AcceptFriendInvite(ctx context.Context, req *pb.AcceptFriendInviteRequest) (*pb.ActionResponse, error) {
 	s.ctxLog(ctx).Infof("accept user to friends received: %d", req.GetInviteId())
 
@@ -191,8 +248,14 @@ func (s *UserServer) AcceptFriendInvite(ctx context.Context, req *pb.AcceptFrien
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.AcceptFriendInvite(ctx, usecases.AcceptFriendInviteRequest{
-		InviteId: req.GetInviteId(),
+		InviteId:      req.GetInviteId(),
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -210,8 +273,14 @@ func (s *UserServer) DeclineFriendInvite(ctx context.Context, req *pb.DeclineFri
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.DeclineFriendInvite(ctx, usecases.DeclineFriendInviteRequest{
-		InviteId: req.GetInviteId(),
+		InviteId:      req.GetInviteId(),
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -229,8 +298,14 @@ func (s *UserServer) DeleteFromFriend(ctx context.Context, req *pb.DeleteFromFri
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.UserUsecase.DeleteFromFriend(ctx, usecases.DeleteFromFriendRequest{
-		FriendId: req.GetFriendId(),
+		FriendId:      req.GetFriendId(),
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err

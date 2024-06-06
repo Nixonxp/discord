@@ -7,12 +7,22 @@ type CreateUserRequest struct {
 	Password string
 }
 
+type CreateOrGetUserRequest struct {
+	Login          string
+	Name           string
+	Email          string
+	Password       string
+	OauthId        string
+	AvatarPhotoUrl string
+}
+
 type UpdateUserRequest struct {
 	Id             string
 	Login          string
 	Name           string
 	Email          string
 	AvatarPhotoUrl string
+	CurrentUserId  string
 }
 
 type GetUserByLoginAndPasswordRequest struct {
@@ -25,6 +35,7 @@ type GetUserByLoginRequest struct {
 }
 
 type GetUserFriendsRequest struct {
+	UserId string
 }
 
 type GetUserInvitesRequest struct {
@@ -32,17 +43,21 @@ type GetUserInvitesRequest struct {
 }
 
 type AddToFriendByUserIdRequest struct {
-	UserId string
+	UserId  string
+	OwnerId string
 }
 
 type AcceptFriendInviteRequest struct {
-	InviteId string
+	InviteId      string
+	CurrentUserId string
 }
 
 type DeclineFriendInviteRequest struct {
-	InviteId string
+	InviteId      string
+	CurrentUserId string
 }
 
 type DeleteFromFriendRequest struct {
-	FriendId string
+	FriendId      string
+	CurrentUserId string
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/Nixonxp/discord/auth/pkg/application"
 	logCfg "github.com/Nixonxp/discord/auth/pkg/logger"
 	logger "github.com/Nixonxp/discord/auth/pkg/logger"
-	pkg_middleware "github.com/Nixonxp/discord/auth/pkg/middleware"
+	method_rate_limiter "github.com/Nixonxp/discord/auth/pkg/method_rate_limiter"
 	"github.com/Nixonxp/discord/auth/pkg/rate_limiter"
 	jaeger_tracing "github.com/Nixonxp/discord/auth/pkg/tracing"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
@@ -22,6 +22,8 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
 	ratelimitCustom "github.com/tommy-sho/rate-limiter-grpc-go"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"os/signal"
@@ -80,17 +82,26 @@ func main() {
 		log.Fatalf("failed to create app: %v", err)
 	}
 
+	oauthConfig := oauth2.Config{
+		ClientID:     "586587681748-68glr3bqvfu64q5jks769ba78pjhp309.apps.googleusercontent.com", // todo to env file
+		ClientSecret: "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",
+		RedirectURL:  "https://localhost:8443/api/v1/oauth/callback",
+		Scopes:       []string{"profile", "email"},
+		Endpoint:     google.Endpoint,
+	}
+
 	userInMemoryRepo := repository.NewInMemoryUserRepository()
 	authUsecase := usecases.NewAuthUsecase(usecases.Deps{
 		UserRepo:    userInMemoryRepo,
 		UserService: userServiceClient,
 		Log:         log,
+		Oauth2Cgf:   oauthConfig,
 	})
 
 	// limiter per method
-	methodLimiter := pkg_middleware.NewMethodRateLimiterInterceptor(
-		pkg_middleware.NewMethodLimiterInfo("register", 10000),
-		pkg_middleware.NewMethodLimiterInfo("login", 50000),
+	methodLimiter := method_rate_limiter.NewMethodRateLimiterInterceptor(
+		method_rate_limiter.NewMethodLimiterInfo("register", 10000),
+		method_rate_limiter.NewMethodLimiterInfo("login", 50000),
 	)
 
 	globalLimiter := rate_limiter.NewRateLimiter(100000)

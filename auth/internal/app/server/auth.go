@@ -41,7 +41,7 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	userInfo, err := s.AuthUsecase.Login(ctx, usecases.LoginUserInfo{
+	userLoginInfo, err := s.AuthUsecase.Login(ctx, usecases.LoginUserInfo{
 		Login:    req.GetLogin(),
 		Password: req.GetPassword(),
 	})
@@ -50,10 +50,26 @@ func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Login
 	}
 
 	return &pb.LoginResponse{
-		UserId: userInfo.UserID.String(),
-		Login:  userInfo.Login,
-		Name:   userInfo.Name,
-		Token:  "{token}",
+		Token:        userLoginInfo.Token,
+		RefreshToken: userLoginInfo.RefreshToken,
+	}, nil
+}
+
+func (s *AuthServer) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	token := req.GetRefreshToken()
+	s.Log.WithContext(ctx).WithField("token", token).Info("refresh token received")
+
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	newToken, err := s.AuthUsecase.Refresh(ctx, req.GetRefreshToken())
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.RefreshResponse{
+		Token: newToken,
 	}, nil
 }
 
@@ -76,7 +92,8 @@ func (s *AuthServer) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginC
 	}
 
 	loginResult, err := s.AuthUsecase.OauthLoginCallback(ctx, usecases.OauthLoginCallbackRequest{
-		Code: req.GetCode(),
+		Code:  req.GetCode(),
+		State: req.GetState(),
 	})
 
 	if err != nil {
@@ -84,9 +101,7 @@ func (s *AuthServer) OauthLoginCallback(ctx context.Context, req *pb.OauthLoginC
 	}
 
 	return &pb.OauthLoginCallbackResponse{
-		UserId: loginResult.UserID.String(),
-		Login:  loginResult.Login,
-		Name:   loginResult.Name,
-		Token:  "{token}",
+		Token:        loginResult.Token,
+		RefreshToken: loginResult.RefreshToken,
 	}, nil
 }

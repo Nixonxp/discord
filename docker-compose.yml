@@ -85,22 +85,7 @@ services:
       context: ./chat
       dockerfile: ./build/Dockerfile
 
-  mongodb:
-    image: mongo:7.0.5
-    restart: unless-stopped
-    #env_file: ./chat/.env
-    volumes:
-      - mongo-volume:/data/db1
-    ports:
-      - 27117:27017
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - MONGO_INITDB_ROOT_USERNAME=discord
-      - MONGO_INITDB_ROOT_PASSWORD=example
-      - MONGO_INITDB_DATABASE=discord
-    networks:
-      - mongodb
+#todo
 
   postgres:
     container_name: postgres_discord

@@ -65,6 +65,7 @@ func NewDiscordGatewayServiceServer(ctx context.Context, d Deps) (*DiscordGatewa
 				&pb.GetUserPrivateMessagesRequest{},
 				&pb.DeleteFromFriendRequest{},
 				&pb.GetUserInvitesRequest{},
+				&pb.RefreshRequest{},
 			),
 		)
 		if err != nil {
@@ -96,6 +97,20 @@ func (s *DiscordGatewayServiceServer) Login(ctx context.Context, req *pb.LoginRe
 	}
 
 	resp, err := s.DiscordGatewayService.Login(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *DiscordGatewayServiceServer) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	if err := s.validator.Validate(req); err != nil {
+		log.Println(err)
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	resp, err := s.DiscordGatewayService.Refresh(ctx, req)
 	if err != nil {
 		return nil, err
 	}

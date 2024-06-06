@@ -7,6 +7,7 @@ type OauthLoginResult struct {
 	Code string
 }
 
-type OauthLoginCallbackResult struct {
-	User
+type LoginResult struct {
+	Token        string
+	RefreshToken string
 }

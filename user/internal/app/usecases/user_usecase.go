@@ -7,7 +7,6 @@ import (
 	pkgerrors "github.com/Nixonxp/discord/user/pkg/errors"
 	"github.com/Nixonxp/discord/user/pkg/transaction_manager"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Deps struct {
@@ -31,22 +30,16 @@ func NewUserUsecase(d Deps) UsecaseInterface {
 
 func (u *UserUsecase) CreateUser(ctx context.Context, req CreateUserRequest) (*models.User, error) {
 	userID := models.UserID(uuid.New())
-	password := []byte(req.Password)
-
-	hashedPassword, err := bcrypt.GenerateFromPassword(password, bcrypt.MinCost)
-	if err != nil {
-		return &models.User{}, pkgerrors.Wrap("password hashing error", err)
-	}
 
 	user := &models.User{
 		Id:       userID,
 		Login:    req.Login,
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: string(hashedPassword),
+		Password: req.Password,
 	}
 
-	err = u.UserRepo.CreateUser(ctx, user)
+	err := u.UserRepo.CreateUser(ctx, user)
 	if err != nil {
 		return &models.User{}, err
 	}
@@ -54,7 +47,37 @@ func (u *UserUsecase) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 	return user, nil
 }
 
+func (u *UserUsecase) CreateOrGetUser(ctx context.Context, req CreateOrGetUserRequest) (*models.User, error) {
+	user, err := u.UserRepo.GetUserByOauthId(ctx, req.OauthId)
+	if err != nil {
+		if !errors.Is(err, models.ErrNotFound) {
+			return nil, err
+		}
+
+		userID := models.UserID(uuid.New())
+		user = &models.User{
+			Id:             userID,
+			Login:          req.Login,
+			Name:           req.Name,
+			Email:          req.Email,
+			Password:       req.Password,
+			OauthId:        req.OauthId,
+			AvatarPhotoUrl: req.AvatarPhotoUrl,
+		}
+
+		err = u.UserRepo.CreateUser(ctx, user)
+		if err != nil {
+			return &models.User{}, err
+		}
+	}
+
+	return user, nil
+}
+
 func (u *UserUsecase) UpdateUser(ctx context.Context, req UpdateUserRequest) (*models.User, error) {
+	if req.CurrentUserId != req.Id {
+		return nil, models.PermissionDenied
+	}
 	userID := models.UserID(uuid.MustParse(req.Id))
 	err := u.UserRepo.UpdateUser(ctx, &models.User{
 		Id:             userID,
@@ -81,7 +104,7 @@ func (u *UserUsecase) UpdateUser(ctx context.Context, req UpdateUserRequest) (*m
 	return user, nil
 }
 
-func (u *UserUsecase) GetUserByLoginAndPassword(ctx context.Context, req GetUserByLoginAndPasswordRequest) (*models.User, error) {
+func (u *UserUsecase) GetUserForLogin(ctx context.Context, req GetUserByLoginRequest) (*models.User, error) {
 	user, err := u.UserRepo.GetUserByLogin(ctx, req.Login)
 	if err != nil {
 		if errors.Is(err, models.ErrNotFound) {
@@ -89,11 +112,6 @@ func (u *UserUsecase) GetUserByLoginAndPassword(ctx context.Context, req GetUser
 		}
 
 		return &models.User{}, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
-	if err != nil {
-		return &models.User{}, models.ErrCredInvalid
 	}
 
 	return user, nil
@@ -109,7 +127,7 @@ func (u *UserUsecase) GetUserByLogin(ctx context.Context, req GetUserByLoginRequ
 }
 
 func (u *UserUsecase) GetUserFriends(ctx context.Context, req GetUserFriendsRequest) (*models.UserFriendsInfo, error) {
-	userID := models.UserID(uuid.MustParse("284fef68-7e3e-4d1d-96a0-8c96f7b3b795")) // todo from auth
+	userID := models.UserID(uuid.MustParse(req.UserId))
 
 	friends, err := u.UserFriendsRepo.GetUserFriendsByUserId(ctx, userID)
 	if err != nil {
@@ -131,7 +149,7 @@ func (u *UserUsecase) AddToFriendByUserId(ctx context.Context, req AddToFriendBy
 	inviteId, _ := uuid.NewUUID()
 	err = u.FriendInvitesRepo.CreateInvite(ctx, &models.FriendInvite{
 		InviteId: models.InviteId(inviteId),
-		OwnerId:  models.UserID(uuid.MustParse("e72cebc9-957a-4093-b6b4-5cd820efa9e1")), // todo from auth data
+		OwnerId:  models.UserID(uuid.MustParse(req.OwnerId)),
 		UserId:   userID,
 		Status:   models.PendingStatus,
 	})
@@ -164,6 +182,10 @@ func (u *UserUsecase) AcceptFriendInvite(ctx context.Context, req AcceptFriendIn
 			return nil, errors.New("invite not found")
 		}
 		return nil, err
+	}
+
+	if invite.UserId.String() != req.CurrentUserId {
+		return nil, models.PermissionDenied
 	}
 
 	if invite.Status != models.PendingStatus {
@@ -210,7 +232,19 @@ func (u *UserUsecase) AcceptFriendInvite(ctx context.Context, req AcceptFriendIn
 func (u *UserUsecase) DeclineFriendInvite(ctx context.Context, req DeclineFriendInviteRequest) (*models.ActionInfo, error) {
 	inviteID := models.InviteId(uuid.MustParse(req.InviteId))
 
-	err := u.FriendInvitesRepo.DeclineInvite(ctx, inviteID)
+	invite, err := u.FriendInvitesRepo.GetInviteById(ctx, inviteID)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			return nil, errors.New("invite not found")
+		}
+		return nil, err
+	}
+
+	if invite.UserId.String() != req.CurrentUserId {
+		return nil, models.PermissionDenied
+	}
+
+	err = u.FriendInvitesRepo.DeclineInvite(ctx, inviteID)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +255,7 @@ func (u *UserUsecase) DeclineFriendInvite(ctx context.Context, req DeclineFriend
 }
 
 func (u *UserUsecase) DeleteFromFriend(ctx context.Context, req DeleteFromFriendRequest) (*models.ActionInfo, error) {
-	userID := models.UserID(uuid.MustParse("284fef68-7e3e-4d1d-96a0-8c96f7b3b795")) // todo from auth
+	userID := models.UserID(uuid.MustParse(req.CurrentUserId))
 	friendID := models.UserID(uuid.MustParse(req.FriendId))
 
 	err := u.UserFriendsRepo.DeleteFriend(ctx, userID, friendID)

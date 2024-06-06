@@ -216,7 +216,11 @@ func main() {
 	}
 
 	httpServer := &http.Server{
-		Handler:   middleware.PrometheusMiddleware(middleware.TracingWrapper(middleware.AllowCORS(mux))),
+		Handler: middleware.JWTMiddleware(
+			middleware.PrometheusMiddleware(
+				middleware.TracingWrapper(middleware.AllowCORS(mux)),
+			),
+		),
 		TLSConfig: tlsConfig,
 		Addr:      port,
 	}

@@ -9,6 +9,7 @@ service AuthService {
   // Регистрация пользователя
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Refresh(RefreshRequest) returns (RefreshResponse) {}
   rpc OauthLogin(OauthLoginRequest) returns (OauthLoginResponse) {}
   rpc OauthLoginCallback(OauthLoginCallbackRequest) returns (OauthLoginCallbackResponse) {}
 }
@@ -30,10 +31,17 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string userId = 1;
-  string login = 2;
-  string name = 3;
-  string token = 4;
+  string token = 1;
+  string refreshToken = 2;
+}
+
+message RefreshRequest {
+  string refreshToken = 1;
+}
+
+message RefreshResponse {
+  string token = 1;
+  string state = 2;
 }
 
 message User {
@@ -52,13 +60,12 @@ message OauthLoginResponse {
 
 message OauthLoginCallbackRequest {
   string code = 1;
+  string state = 2;
 }
 
 message OauthLoginCallbackResponse {
-  string userId = 1;
-  string login = 2;
-  string name = 3;
-  string token = 4;
+  string token = 1;
+  string refreshToken = 2;
 }
 
 message ErrorMessage {

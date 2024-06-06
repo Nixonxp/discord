@@ -55,10 +55,17 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string userId = 1 [json_name = "user_id"];
-  string login = 2 [json_name = "login"];
-  string name = 3 [json_name = "name"];
-  string token = 4 [json_name = "token"];
+  string token = 1 [json_name = "token"];
+  string refreshToken = 2 [json_name = "refresh_token"];
+}
+
+
+message RefreshRequest {
+  string refreshToken = 1 [json_name = "refresh_token", (buf.validate.field).required = true, (google.api.field_behavior) = REQUIRED];
+}
+
+message RefreshResponse {
+  string token = 1 [json_name = "token"];
 }
 
 message OauthLoginRequest {
@@ -72,13 +79,14 @@ message OauthLoginCallbackRequest {
   string code = 1 [json_name = "code", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     example: "\"{code}\""
   }];
+  string state = 2 [json_name = "state", (buf.validate.field).required = true, (buf.validate.field).string.min_len = 3, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "\"{state}\""
+  }];
 }
 
 message OauthLoginCallbackResponse {
-  string userId = 1 [json_name = "user_id"];
-  string login = 2 [json_name = "login"];
-  string name = 3 [json_name = "name"];
-  string token = 4 [json_name = "email"];
+  string token = 1 [json_name = "token"];
+  string refreshToken = 2 [json_name = "refresh_token"];
 }
 
 message UpdateUserRequest {

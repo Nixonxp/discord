@@ -12,6 +12,7 @@ type userRow struct {
 	Email          string    `db:"email"`
 	Password       string    `db:"password"`
 	AvatarPhotoUrl *string   `db:"avatar_photo_url"`
+	OauthId        *string   `db:"oauth_id"`
 }
 
 func (r *userRow) ValuesMap() map[string]any {
@@ -22,6 +23,7 @@ func (r *userRow) ValuesMap() map[string]any {
 		"email":            r.Email,
 		"password":         r.Password,
 		"avatar_photo_url": r.AvatarPhotoUrl,
+		"oauth_id":         r.OauthId,
 	}
 }
 
@@ -33,6 +35,7 @@ func columns() []string {
 		"email",
 		"password",
 		"avatar_photo_url",
+		"oauth_id",
 	}
 }
 
@@ -55,10 +58,20 @@ func newUserRowFromModelsUser(user *models.User) (*userRow, error) {
 		Email:          user.Email,
 		Password:       user.Password,
 		AvatarPhotoUrl: &user.AvatarPhotoUrl,
+		OauthId:        &user.OauthId,
 	}, nil
 }
 
 func newUserModelsFromUserRow(userRow *userRow) (*models.User, error) {
+	var str string
+	if userRow.AvatarPhotoUrl == nil {
+		userRow.AvatarPhotoUrl = &str
+	}
+
+	if userRow.OauthId == nil {
+		userRow.OauthId = &str
+	}
+
 	return &models.User{
 		Id:             models.UserID(userRow.ID),
 		Login:          userRow.Login,
@@ -66,5 +79,6 @@ func newUserModelsFromUserRow(userRow *userRow) (*models.User, error) {
 		Email:          userRow.Email,
 		Password:       userRow.Password,
 		AvatarPhotoUrl: *userRow.AvatarPhotoUrl,
+		OauthId:        *userRow.OauthId,
 	}, nil
 }

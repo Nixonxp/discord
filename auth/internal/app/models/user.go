@@ -10,11 +10,12 @@ func (v UserID) String() string {
 }
 
 type User struct {
-	UserID   UserID
-	Login    string
-	Name     string
-	Email    string
-	Password string
+	UserID         UserID
+	Login          string
+	Name           string
+	Email          string
+	Password       string
+	AvatarPhotoUrl string
 }
 
 type Login struct {

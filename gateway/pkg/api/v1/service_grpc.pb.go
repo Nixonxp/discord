@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	GatewayService_Register_FullMethodName               = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/Register"
 	GatewayService_Login_FullMethodName                  = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/Login"
+	GatewayService_Refresh_FullMethodName                = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/Refresh"
 	GatewayService_OauthLogin_FullMethodName             = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/OauthLogin"
 	GatewayService_OauthLoginCallback_FullMethodName     = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/OauthLoginCallback"
 	GatewayService_UpdateUser_FullMethodName             = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/UpdateUser"
@@ -55,6 +56,8 @@ type GatewayServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// Аутентификация пользователя
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	// Обновление токена пользователя
+	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
 	// Аутентификация пользователя через OAuth
 	OauthLogin(ctx context.Context, in *OauthLoginRequest, opts ...grpc.CallOption) (*OauthLoginResponse, error)
 	// Аутентификация пользователя через код oauth
@@ -125,6 +128,15 @@ func (c *gatewayServiceClient) Register(ctx context.Context, in *RegisterRequest
 func (c *gatewayServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
 	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, GatewayService_Login_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewayServiceClient) Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error) {
+	out := new(RefreshResponse)
+	err := c.cc.Invoke(ctx, GatewayService_Refresh_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -355,6 +367,8 @@ type GatewayServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	// Аутентификация пользователя
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	// Обновление токена пользователя
+	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
 	// Аутентификация пользователя через OAuth
 	OauthLogin(context.Context, *OauthLoginRequest) (*OauthLoginResponse, error)
 	// Аутентификация пользователя через код oauth
@@ -415,6 +429,9 @@ func (UnimplementedGatewayServiceServer) Register(context.Context, *RegisterRequ
 }
 func (UnimplementedGatewayServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedGatewayServiceServer) Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Refresh not implemented")
 }
 func (UnimplementedGatewayServiceServer) OauthLogin(context.Context, *OauthLoginRequest) (*OauthLoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OauthLogin not implemented")
@@ -533,6 +550,24 @@ func _GatewayService_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GatewayServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewayService_Refresh_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).Refresh(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_Refresh_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).Refresh(ctx, req.(*RefreshRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -983,6 +1018,10 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _GatewayService_Login_Handler,
+		},
+		{
+			MethodName: "Refresh",
+			Handler:    _GatewayService_Refresh_Handler,
 		},
 		{
 			MethodName: "OauthLogin",

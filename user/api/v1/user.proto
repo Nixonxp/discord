@@ -5,7 +5,8 @@ option go_package = "github.com/Nixonxp/discord/user/pkg/api/v1;user";
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (UserDataResponse) {}
-  rpc GetUserByLoginAndPassword(GetUserByLoginAndPasswordRequest) returns (UserDataResponse) {}
+  rpc GetUserForLogin(GetUserForLoginRequest) returns (GetUserForLoginResponse) {}
+  rpc CreateOrGetUser(CreateOrGetUserRequest) returns (UserDataResponse) {}
 
   rpc UpdateUser(UpdateUserRequest) returns (UserDataResponse) {}
   rpc GetUserByLogin(GetUserByLoginRequest) returns (UserDataResponse) {}
@@ -22,6 +23,15 @@ message CreateUserRequest {
   string name = 2;
   string email = 3;
   string password = 4;
+}
+
+message CreateOrGetUserRequest {
+  string login = 1;
+  string name = 2;
+  string email = 3;
+  string password = 4;
+  string avatar_photo_url = 5;
+  string oauthId = 6;
 }
 
 message UpdateUserRequest {
@@ -42,6 +52,18 @@ message UserDataResponse {
 
 message GetUserByLoginRequest {
   string login = 1;
+}
+
+message GetUserForLoginRequest {
+  string login = 1;
+}
+
+message GetUserForLoginResponse {
+  string id = 1;
+  string login = 2;
+  string name = 3;
+  string email = 4;
+  string password = 6;
 }
 
 message GetUserByLoginAndPasswordRequest {

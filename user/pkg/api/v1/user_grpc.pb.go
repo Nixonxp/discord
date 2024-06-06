@@ -19,16 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	UserService_CreateUser_FullMethodName                = "/github.com.Nixonxp.discord.user.api.v1.UserService/CreateUser"
-	UserService_GetUserByLoginAndPassword_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLoginAndPassword"
-	UserService_UpdateUser_FullMethodName                = "/github.com.Nixonxp.discord.user.api.v1.UserService/UpdateUser"
-	UserService_GetUserByLogin_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLogin"
-	UserService_GetUserFriends_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserFriends"
-	UserService_GetUserInvites_FullMethodName            = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserInvites"
-	UserService_AddToFriendByUserId_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/AddToFriendByUserId"
-	UserService_AcceptFriendInvite_FullMethodName        = "/github.com.Nixonxp.discord.user.api.v1.UserService/AcceptFriendInvite"
-	UserService_DeclineFriendInvite_FullMethodName       = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeclineFriendInvite"
-	UserService_DeleteFromFriend_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeleteFromFriend"
+	UserService_CreateUser_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/CreateUser"
+	UserService_GetUserForLogin_FullMethodName     = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserForLogin"
+	UserService_CreateOrGetUser_FullMethodName     = "/github.com.Nixonxp.discord.user.api.v1.UserService/CreateOrGetUser"
+	UserService_UpdateUser_FullMethodName          = "/github.com.Nixonxp.discord.user.api.v1.UserService/UpdateUser"
+	UserService_GetUserByLogin_FullMethodName      = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserByLogin"
+	UserService_GetUserFriends_FullMethodName      = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserFriends"
+	UserService_GetUserInvites_FullMethodName      = "/github.com.Nixonxp.discord.user.api.v1.UserService/GetUserInvites"
+	UserService_AddToFriendByUserId_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/AddToFriendByUserId"
+	UserService_AcceptFriendInvite_FullMethodName  = "/github.com.Nixonxp.discord.user.api.v1.UserService/AcceptFriendInvite"
+	UserService_DeclineFriendInvite_FullMethodName = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeclineFriendInvite"
+	UserService_DeleteFromFriend_FullMethodName    = "/github.com.Nixonxp.discord.user.api.v1.UserService/DeleteFromFriend"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -36,7 +37,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
-	GetUserByLoginAndPassword(ctx context.Context, in *GetUserByLoginAndPasswordRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
+	GetUserForLogin(ctx context.Context, in *GetUserForLoginRequest, opts ...grpc.CallOption) (*GetUserForLoginResponse, error)
+	CreateOrGetUser(ctx context.Context, in *CreateOrGetUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	GetUserByLogin(ctx context.Context, in *GetUserByLoginRequest, opts ...grpc.CallOption) (*UserDataResponse, error)
 	GetUserFriends(ctx context.Context, in *GetUserFriendsRequest, opts ...grpc.CallOption) (*GetUserFriendsResponse, error)
@@ -64,9 +66,18 @@ func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserReques
 	return out, nil
 }
 
-func (c *userServiceClient) GetUserByLoginAndPassword(ctx context.Context, in *GetUserByLoginAndPasswordRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
+func (c *userServiceClient) GetUserForLogin(ctx context.Context, in *GetUserForLoginRequest, opts ...grpc.CallOption) (*GetUserForLoginResponse, error) {
+	out := new(GetUserForLoginResponse)
+	err := c.cc.Invoke(ctx, UserService_GetUserForLogin_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) CreateOrGetUser(ctx context.Context, in *CreateOrGetUserRequest, opts ...grpc.CallOption) (*UserDataResponse, error) {
 	out := new(UserDataResponse)
-	err := c.cc.Invoke(ctx, UserService_GetUserByLoginAndPassword_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, UserService_CreateOrGetUser_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +161,8 @@ func (c *userServiceClient) DeleteFromFriend(ctx context.Context, in *DeleteFrom
 // for forward compatibility
 type UserServiceServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*UserDataResponse, error)
-	GetUserByLoginAndPassword(context.Context, *GetUserByLoginAndPasswordRequest) (*UserDataResponse, error)
+	GetUserForLogin(context.Context, *GetUserForLoginRequest) (*GetUserForLoginResponse, error)
+	CreateOrGetUser(context.Context, *CreateOrGetUserRequest) (*UserDataResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UserDataResponse, error)
 	GetUserByLogin(context.Context, *GetUserByLoginRequest) (*UserDataResponse, error)
 	GetUserFriends(context.Context, *GetUserFriendsRequest) (*GetUserFriendsResponse, error)
@@ -169,8 +181,11 @@ type UnimplementedUserServiceServer struct {
 func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*UserDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedUserServiceServer) GetUserByLoginAndPassword(context.Context, *GetUserByLoginAndPasswordRequest) (*UserDataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserByLoginAndPassword not implemented")
+func (UnimplementedUserServiceServer) GetUserForLogin(context.Context, *GetUserForLoginRequest) (*GetUserForLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserForLogin not implemented")
+}
+func (UnimplementedUserServiceServer) CreateOrGetUser(context.Context, *CreateOrGetUserRequest) (*UserDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateOrGetUser not implemented")
 }
 func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
@@ -227,20 +242,38 @@ func _UserService_CreateUser_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserService_GetUserByLoginAndPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserByLoginAndPasswordRequest)
+func _UserService_GetUserForLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserForLoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UserServiceServer).GetUserByLoginAndPassword(ctx, in)
+		return srv.(UserServiceServer).GetUserForLogin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: UserService_GetUserByLoginAndPassword_FullMethodName,
+		FullMethod: UserService_GetUserForLogin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServiceServer).GetUserByLoginAndPassword(ctx, req.(*GetUserByLoginAndPasswordRequest))
+		return srv.(UserServiceServer).GetUserForLogin(ctx, req.(*GetUserForLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_CreateOrGetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateOrGetUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).CreateOrGetUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_CreateOrGetUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).CreateOrGetUser(ctx, req.(*CreateOrGetUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -401,8 +434,12 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UserService_CreateUser_Handler,
 		},
 		{
-			MethodName: "GetUserByLoginAndPassword",
-			Handler:    _UserService_GetUserByLoginAndPassword_Handler,
+			MethodName: "GetUserForLogin",
+			Handler:    _UserService_GetUserForLogin_Handler,
+		},
+		{
+			MethodName: "CreateOrGetUser",
+			Handler:    _UserService_CreateOrGetUser_Handler,
 		},
 		{
 			MethodName: "UpdateUser",

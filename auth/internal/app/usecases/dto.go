@@ -12,9 +12,23 @@ type LoginUserInfo struct {
 	Password string
 }
 
+type RefreshInfo struct {
+	Token string
+}
+
 type OauthLoginRequest struct {
 }
 
 type OauthLoginCallbackRequest struct {
-	Code string
+	Code  string
+	State string
+}
+
+type GetOrCreateUserRequest struct {
+	Login          string
+	Name           string
+	Email          string
+	Password       string
+	AvatarPhotoUrl string
+	OauthId        string
 }

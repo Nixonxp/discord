@@ -63,7 +63,54 @@
         ],
         "tags": [
           "auth"
-        ]
+        ],
+        "security": []
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Обновление токена пользователя",
+        "operationId": "GatewayService_Refresh",
+        "responses": {
+          "200": {
+            "description": "User successfully authenticated",
+            "schema": {
+              "$ref": "#/definitions/v1RefreshResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request Invalid refresh token",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RefreshRequest"
+            }
+          }
+        ],
+        "tags": [
+          "auth"
+        ],
+        "security": []
       }
     },
     "/api/v1/auth/register": {
@@ -108,7 +155,8 @@
         ],
         "tags": [
           "auth"
-        ]
+        ],
+        "security": []
       }
     },
     "/api/v1/channel/create": {
@@ -688,7 +736,7 @@
       }
     },
     "/api/v1/oauth/callback": {
-      "post": {
+      "get": {
         "summary": "Аутентификация пользователя через код oauth",
         "operationId": "GatewayService_OauthLoginCallback",
         "responses": {
@@ -719,17 +767,22 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "code",
+            "in": "query",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1OauthLoginCallbackRequest"
-            }
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
           "auth"
-        ]
+        ],
+        "security": []
       }
     },
     "/api/v1/oauth/login": {
@@ -774,7 +827,8 @@
         ],
         "tags": [
           "auth"
-        ]
+        ],
+        "security": []
       }
     },
     "/api/v1/servers/create": {
@@ -1488,16 +1542,10 @@
     "v1LoginResponse": {
       "type": "object",
       "properties": {
-        "user_id": {
-          "type": "string"
-        },
-        "login": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
         "token": {
+          "type": "string"
+        },
+        "refresh_token": {
           "type": "string"
         }
       }
@@ -1523,31 +1571,13 @@
         }
       }
     },
-    "v1OauthLoginCallbackRequest": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "string",
-          "example": "{code}"
-        }
-      },
-      "required": [
-        "code"
-      ]
-    },
     "v1OauthLoginCallbackResponse": {
       "type": "object",
       "properties": {
-        "user_id": {
+        "token": {
           "type": "string"
         },
-        "login": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "email": {
+        "refresh_token": {
           "type": "string"
         }
       }
@@ -1559,6 +1589,25 @@
       "type": "object",
       "properties": {
         "code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RefreshRequest": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "refresh_token"
+      ]
+    },
+    "v1RefreshResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
           "type": "string"
         }
       }
@@ -1701,5 +1750,18 @@
         }
       }
     }
-  }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "description": "Authentication token, prefixed by Bearer: Bearer \u003ctoken\u003e",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
 }

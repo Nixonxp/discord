@@ -58,6 +58,7 @@ func NewAuthServer(ctx context.Context, d Deps) (*AuthServer, error) {
 				&pb.LoginRequest{},
 				&pb.OauthLoginRequest{},
 				&pb.OauthLoginCallbackRequest{},
+				&pb.RefreshRequest{},
 			),
 		)
 		if err != nil {

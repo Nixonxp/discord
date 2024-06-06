@@ -16,6 +16,7 @@ type User struct {
 	Email          string
 	Password       string
 	AvatarPhotoUrl string
+	OauthId        string
 }
 
 type ActionInfo struct {

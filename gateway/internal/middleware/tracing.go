@@ -23,6 +23,7 @@ func TracingWrapper(h http.Handler) http.Handler {
 			r = r.WithContext(opentracing.ContextWithSpan(r.Context(), serverSpan))
 			defer serverSpan.Finish()
 		}
+
 		h.ServeHTTP(w, r)
 	})
 }

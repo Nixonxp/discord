@@ -7,6 +7,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/bufbuild/protovalidate-go v0.6.2
 	github.com/cenkalti/backoff/v3 v3.1.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0

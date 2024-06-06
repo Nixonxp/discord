@@ -52,7 +52,7 @@ func NewUserServer(ctx context.Context, d Deps) (*UserServer, error) {
 			protovalidate.WithDisableLazy(true),
 			protovalidate.WithMessages(
 				&pb.CreateUserRequest{},
-				&pb.GetUserByLoginAndPasswordRequest{},
+				&pb.GetUserForLoginRequest{},
 				&pb.UpdateUserRequest{},
 				&pb.GetUserByLoginRequest{},
 				&pb.GetUserFriendsRequest{},
@@ -61,6 +61,7 @@ func NewUserServer(ctx context.Context, d Deps) (*UserServer, error) {
 				&pb.DeclineFriendInviteRequest{},
 				&pb.GetUserInvitesRequest{},
 				&pb.DeleteFromFriendRequest{},
+				&pb.CreateOrGetUserRequest{},
 			),
 		)
 		if err != nil {

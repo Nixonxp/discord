@@ -30,21 +30,45 @@ func (s *UserClient) Register(ctx context.Context, registerInfo usecases.Registe
 	}, nil
 }
 
-func (s *UserClient) Login(ctx context.Context, loginInfo usecases.LoginUserInfo) (*models.User, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.Login")
+func (s *UserClient) GetUserForLogin(ctx context.Context, loginInfo usecases.LoginUserInfo) (*models.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserByLogin")
 	defer span.Finish()
-	response, err := s.client.GetUserByLoginAndPassword(ctx, &user.GetUserByLoginAndPasswordRequest{
-		Login:    loginInfo.Login,
-		Password: loginInfo.Password,
+	response, err := s.client.GetUserForLogin(ctx, &user.GetUserForLoginRequest{
+		Login: loginInfo.Login,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.User{
-		UserID: models.UserID(uuid.MustParse(response.Id)),
-		Login:  response.Login,
-		Name:   response.Name,
-		Email:  response.Email,
+		UserID:   models.UserID(uuid.MustParse(response.Id)),
+		Login:    response.Login,
+		Name:     response.Name,
+		Email:    response.Email,
+		Password: response.Password,
+	}, nil
+}
+
+func (s *UserClient) CreateOrCreateUser(ctx context.Context, userInfo usecases.GetOrCreateUserRequest) (*models.User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.CreateOrCreateUser")
+	defer span.Finish()
+	response, err := s.client.CreateOrGetUser(ctx, &user.CreateOrGetUserRequest{
+		Login:          userInfo.Login,
+		Name:           userInfo.Name,
+		Email:          userInfo.Email,
+		Password:       userInfo.Password,
+		AvatarPhotoUrl: userInfo.AvatarPhotoUrl,
+		OauthId:        userInfo.OauthId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.User{
+		UserID:         models.UserID(uuid.MustParse(response.Id)),
+		Login:          response.Login,
+		Name:           response.Name,
+		Email:          response.Email,
+		AvatarPhotoUrl: response.AvatarPhotoUrl,
 	}, nil
 }
