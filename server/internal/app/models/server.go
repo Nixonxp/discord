@@ -34,7 +34,7 @@ type GetMessagesInfo struct {
 }
 
 type Message struct {
-	Id        uint64
+	Id        string
 	Text      string
 	Timestamp time.Time
 }

@@ -66,6 +66,7 @@ func NewDiscordGatewayServiceServer(ctx context.Context, d Deps) (*DiscordGatewa
 				&pb.DeleteFromFriendRequest{},
 				&pb.GetUserInvitesRequest{},
 				&pb.RefreshRequest{},
+				&pb.CreatePrivateChatRequest{},
 			),
 		)
 		if err != nil {
@@ -409,6 +410,19 @@ func (s *DiscordGatewayServiceServer) SendUserPrivateMessage(ctx context.Context
 	}
 
 	resp, err := s.DiscordGatewayService.SendUserPrivateMessage(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *DiscordGatewayServiceServer) CreatePrivateChat(ctx context.Context, req *pb.CreatePrivateChatRequest) (*pb.CreatePrivateChatResponse, error) {
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	resp, err := s.DiscordGatewayService.CreatePrivateChat(ctx, req)
 	if err != nil {
 		return nil, err
 	}

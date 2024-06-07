@@ -28,9 +28,9 @@ import (
 	"time"
 )
 
-const DSN = "user=admin password=password123 host=postgres port=5432 dbname=discord sslmode=require pool_max_conns=10"
+//const DSN = "user=admin password=password123 host=postgres port=5432 dbname=discord sslmode=require pool_max_conns=10"
 
-//const DSN = "user=admin password=password123 host=localhost port=5432 dbname=discord sslmode=require pool_max_conns=10" // todo delete
+const DSN = "user=admin password=password123 host=localhost port=5432 dbname=discord sslmode=require pool_max_conns=10" // todo delete
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(),
@@ -43,9 +43,9 @@ func main() {
 	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
-		GRPCPort:  ":8080",
-		HTTPPort:  ":8081",
-		DebugPort: ":8084",
+		GRPCPort: ":8280",
+		//HTTPPort:  ":8081",
+		//DebugPort: ":8084",
 	}
 
 	log, err := logger.NewLogger(logCfg.NewDefaultConfig())

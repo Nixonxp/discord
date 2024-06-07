@@ -590,6 +590,27 @@ func (s *DiscordGatewayService) LeaveChannel(ctx context.Context, req *pb.LeaveC
 	}, nil
 }
 
+func (s *DiscordGatewayService) CreatePrivateChat(ctx context.Context, req *pb.CreatePrivateChatRequest) (*pb.CreatePrivateChatResponse, error) {
+	chatClient := pb_chat.NewChatServiceClient(s.ChatConn)
+	request := pb_chat.CreatePrivateChatRequest{
+		UserId: req.GetUserId(),
+	}
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "chat_service.CreatePrivateChat")
+	defer span.Finish()
+
+	response, err := chatClient.CreatePrivateChat(ctx, &request)
+	if err != nil {
+		s.Log.WithContext(ctx).WithError(err).WithField("UserId", req.GetUserId()).Error("create private chat error")
+		return nil, err
+	}
+
+	return &pb.CreatePrivateChatResponse{
+		Success: response.GetSuccess(),
+		ChatId:  response.GetChatId(),
+	}, nil
+}
+
 func (s *DiscordGatewayService) SendUserPrivateMessage(ctx context.Context, req *pb.SendUserPrivateMessageRequest) (*pb.ActionResponse, error) {
 	chatClient := pb_chat.NewChatServiceClient(s.ChatConn)
 	request := pb_chat.SendUserPrivateMessageRequest{

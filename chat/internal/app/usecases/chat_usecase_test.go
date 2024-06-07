@@ -104,7 +104,7 @@ func Test_usecase_ChatUsecase_SendUserPrivateMessage(t *testing.T) {
 				ChatsStorage: mocks.NewChatsStorage(t),
 			}
 			au := NewChatUsecase(Deps{
-				ChatRepo: f.ChatsStorage,
+				MessagesRepo: f.ChatsStorage,
 			})
 			if tt.on != nil {
 				tt.on(f)
@@ -234,7 +234,7 @@ func Test_usecase_ChatUsecase_GetUserPrivateMessages(t *testing.T) {
 				ChatsStorage: mocks.NewChatsStorage(t),
 			}
 			au := NewChatUsecase(Deps{
-				ChatRepo: f.ChatsStorage,
+				MessagesRepo: f.ChatsStorage,
 			})
 			if tt.on != nil {
 				tt.on(f)

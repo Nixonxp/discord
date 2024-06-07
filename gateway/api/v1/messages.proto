@@ -310,3 +310,14 @@ message DeleteFromFriendRequest {
     example: "550e8400-e29b-41d4-a716-446655440000"
   }];
 }
+
+message CreatePrivateChatRequest {
+  string user_id = 1 [json_name = "user_id", (buf.validate.field).required = true,  (buf.validate.field).string.uuid = true, (google.api.field_behavior) = REQUIRED, (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  }];
+}
+
+message CreatePrivateChatResponse {
+  bool success = 1 [json_name = "success"];
+  string chatId = 2 [json_name = "chat_id"];
+}

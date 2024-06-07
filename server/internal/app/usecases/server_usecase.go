@@ -6,12 +6,12 @@ import (
 	"github.com/Nixonxp/discord/server/internal/app/models"
 	log "github.com/Nixonxp/discord/server/pkg/logger"
 	"github.com/google/uuid"
-	"time"
 )
 
 type Deps struct {
 	ServerRepo    ServerStorage
 	SubscribeRepo SubscribeStorage
+	ChatService   UsecaseChatInterface
 	Log           *log.Logger
 }
 
@@ -150,22 +150,45 @@ func (u *ServerUsecase) InviteUserToServer(ctx context.Context, req InviteUserTo
 	}, nil
 }
 
-func (u *ServerUsecase) PublishMessageOnServer(_ context.Context, _ PublishMessageOnServerRequest) (*models.ActionInfo, error) {
-	// todo add repo
+func (u *ServerUsecase) PublishMessageOnServer(ctx context.Context, req PublishMessageOnServerRequest) (*models.ActionInfo, error) {
+	_, err := u.ServerRepo.GetServerById(ctx, req.ServerId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			return nil, errors.New("server not found")
+		}
+		return nil, err
+	}
+
+	_, err = u.ChatService.SendServerMessage(ctx, PublishMessageOnServerRequest{
+		ServerId: req.ServerId,
+		Text:     req.Text,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.ActionInfo{
 		Success: true,
 	}, nil
 }
 
-func (u *ServerUsecase) GetMessagesFromServer(_ context.Context, _ GetMessagesFromServerRequest) (*models.GetMessagesInfo, error) {
-	// todo add repo
+func (u *ServerUsecase) GetMessagesFromServer(ctx context.Context, req GetMessagesFromServerRequest) (*models.GetMessagesInfo, error) {
+	_, err := u.ServerRepo.GetServerById(ctx, req.ServerId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			return nil, errors.New("server not found")
+		}
+		return nil, err
+	}
+
+	messages, err := u.ChatService.GetServerMessages(ctx, GetMessagesFromServerRequest{
+		ServerId: req.ServerId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &models.GetMessagesInfo{
-		Messages: []*models.Message{
-			{
-				Id:        1,
-				Text:      "text",
-				Timestamp: time.Now(),
-			},
-		},
+		Messages: messages.Messages,
 	}, nil
 }

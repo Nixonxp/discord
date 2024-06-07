@@ -2,6 +2,8 @@ package mongo
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -78,11 +80,35 @@ func (c *Collection) NewCollection(collectionName string) (*Collection, error) {
 
 func (c *Collection) UpdateOne(ctx context.Context, filter interface{}, update interface{},
 	opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.UpdateOne")
+	defer span.Finish()
 
+	span.LogFields(
+		log.Object("update", update),
+	)
 	return c.collection.UpdateOne(ctx, filter, update, opts...)
 }
 
 func (c *Collection) Find(ctx context.Context, filter interface{},
 	opts ...*options.FindOptions) (cur *mongo.Cursor, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.Find")
+	defer span.Finish()
+
 	return c.collection.Find(ctx, filter, opts...)
+}
+
+func (c *Collection) FindOne(ctx context.Context, filter interface{},
+	opts ...*options.FindOneOptions) *mongo.SingleResult {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.FindOne")
+	defer span.Finish()
+
+	return c.collection.FindOne(ctx, filter, opts...)
+}
+
+func (c *Collection) DeleteOne(ctx context.Context, filter interface{},
+	opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.DeleteOne")
+	defer span.Finish()
+
+	return c.collection.DeleteOne(ctx, filter, opts...)
 }

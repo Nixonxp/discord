@@ -52,9 +52,9 @@ func main() {
 	defer closer(resourcesShutdownCtx)
 
 	config := application.Config{
-		GRPCPort:  ":8080",
-		HTTPPort:  ":8081",
-		DebugPort: ":8084",
+		GRPCPort: ":8180",
+		//HTTPPort:  ":8081", todo return
+		//DebugPort: ":8084",
 	}
 
 	retryOpts := []grpcretry.CallOption{
@@ -64,7 +64,7 @@ func main() {
 	}
 
 	serverConfig := server.Config{
-		UserServiceUrl: "user:8080",
+		UserServiceUrl: "localhost:8280", // todo env
 		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
 			grpcretry.UnaryClientInterceptor(retryOpts...),
 			ratelimitCustom.UnaryClientInterceptor(ratelimitCustom.NewLimiter(1000)),

@@ -45,6 +45,7 @@ const (
 	GatewayService_JoinChannel_FullMethodName            = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/JoinChannel"
 	GatewayService_LeaveChannel_FullMethodName           = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/LeaveChannel"
 	GatewayService_SendUserPrivateMessage_FullMethodName = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/SendUserPrivateMessage"
+	GatewayService_CreatePrivateChat_FullMethodName      = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/CreatePrivateChat"
 	GatewayService_GetUserPrivateMessages_FullMethodName = "/github.com.Nixonxp.discord.gateway.api.v1.GatewayService/GetUserPrivateMessages"
 )
 
@@ -104,6 +105,8 @@ type GatewayServiceClient interface {
 	LeaveChannel(ctx context.Context, in *LeaveChannelRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Отправить сообщение пользователю
 	SendUserPrivateMessage(ctx context.Context, in *SendUserPrivateMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	// Отправить сообщение пользователю
+	CreatePrivateChat(ctx context.Context, in *CreatePrivateChatRequest, opts ...grpc.CallOption) (*CreatePrivateChatResponse, error)
 	// Получить сообщения с пользователем
 	GetUserPrivateMessages(ctx context.Context, in *GetUserPrivateMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 }
@@ -350,6 +353,15 @@ func (c *gatewayServiceClient) SendUserPrivateMessage(ctx context.Context, in *S
 	return out, nil
 }
 
+func (c *gatewayServiceClient) CreatePrivateChat(ctx context.Context, in *CreatePrivateChatRequest, opts ...grpc.CallOption) (*CreatePrivateChatResponse, error) {
+	out := new(CreatePrivateChatResponse)
+	err := c.cc.Invoke(ctx, GatewayService_CreatePrivateChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gatewayServiceClient) GetUserPrivateMessages(ctx context.Context, in *GetUserPrivateMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
 	out := new(GetMessagesResponse)
 	err := c.cc.Invoke(ctx, GatewayService_GetUserPrivateMessages_FullMethodName, in, out, opts...)
@@ -415,6 +427,8 @@ type GatewayServiceServer interface {
 	LeaveChannel(context.Context, *LeaveChannelRequest) (*ActionResponse, error)
 	// Отправить сообщение пользователю
 	SendUserPrivateMessage(context.Context, *SendUserPrivateMessageRequest) (*ActionResponse, error)
+	// Отправить сообщение пользователю
+	CreatePrivateChat(context.Context, *CreatePrivateChatRequest) (*CreatePrivateChatResponse, error)
 	// Получить сообщения с пользователем
 	GetUserPrivateMessages(context.Context, *GetUserPrivateMessagesRequest) (*GetMessagesResponse, error)
 	mustEmbedUnimplementedGatewayServiceServer()
@@ -501,6 +515,9 @@ func (UnimplementedGatewayServiceServer) LeaveChannel(context.Context, *LeaveCha
 }
 func (UnimplementedGatewayServiceServer) SendUserPrivateMessage(context.Context, *SendUserPrivateMessageRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendUserPrivateMessage not implemented")
+}
+func (UnimplementedGatewayServiceServer) CreatePrivateChat(context.Context, *CreatePrivateChatRequest) (*CreatePrivateChatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePrivateChat not implemented")
 }
 func (UnimplementedGatewayServiceServer) GetUserPrivateMessages(context.Context, *GetUserPrivateMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserPrivateMessages not implemented")
@@ -986,6 +1003,24 @@ func _GatewayService_SendUserPrivateMessage_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewayService_CreatePrivateChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrivateChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewayServiceServer).CreatePrivateChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GatewayService_CreatePrivateChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewayServiceServer).CreatePrivateChat(ctx, req.(*CreatePrivateChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GatewayService_GetUserPrivateMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserPrivateMessagesRequest)
 	if err := dec(in); err != nil {
@@ -1114,6 +1149,10 @@ var GatewayService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendUserPrivateMessage",
 			Handler:    _GatewayService_SendUserPrivateMessage_Handler,
+		},
+		{
+			MethodName: "CreatePrivateChat",
+			Handler:    _GatewayService_CreatePrivateChat_Handler,
 		},
 		{
 			MethodName: "GetUserPrivateMessages",

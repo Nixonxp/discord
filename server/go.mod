@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
 	github.com/juju/ratelimit v1.0.2
@@ -17,6 +18,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/zerolog v1.33.0
+	github.com/tommy-sho/rate-limiter-grpc-go v0.0.0-20200411092855-98190a33e3f3
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	go.mongodb.org/mongo-driver v1.15.0
 	go.opentelemetry.io/otel/trace v1.27.0
@@ -59,6 +61,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/ratelimit v0.1.0 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/net v0.24.0 // indirect

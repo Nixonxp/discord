@@ -8,16 +8,19 @@ import (
 	grpcutils "github.com/Nixonxp/discord/server/pkg/grpc_utils"
 	log "github.com/Nixonxp/discord/server/pkg/logger"
 	"github.com/bufbuild/protovalidate-go"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"net"
 )
 
 // Config - server config
 type Config struct {
-	ChainUnaryInterceptors []grpc.UnaryServerInterceptor
-	UnaryInterceptors      []grpc.UnaryServerInterceptor
+	ChainUnaryInterceptors  []grpc.UnaryServerInterceptor
+	UnaryInterceptors       []grpc.UnaryServerInterceptor
+	UnaryClientInterceptors []grpc.UnaryClientInterceptor
+
+	ChatServiceUrl string
 }
 
 // Deps - server deps
@@ -239,15 +242,18 @@ func (s *ServerServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMes
 		return nil, err
 	}
 
-	return &pb.GetMessagesResponse{
-		Messages: []*pb.Message{
-			{
-				Id:   "uuid todo",
-				Text: result.Messages[0].Text,
-				Timestamp: &timestamp.Timestamp{
-					Seconds: result.Messages[0].Timestamp.Unix(),
-				},
+	messages := make([]*pb.Message, len(result.Messages))
+	for k, v := range result.Messages {
+		messages[k] = &pb.Message{
+			Id:   v.Id,
+			Text: v.Text,
+			Timestamp: &timestamppb.Timestamp{
+				Seconds: v.Timestamp.Unix(),
 			},
-		},
+		}
+	}
+
+	return &pb.GetMessagesResponse{
+		Messages: messages,
 	}, nil
 }

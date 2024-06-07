@@ -5,6 +5,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "api/chat";
 
 service ChatService {
+  rpc CreatePrivateChat(CreatePrivateChatRequest) returns (CreatePrivateChatResponse) {}
   rpc SendUserPrivateMessage(SendUserPrivateMessageRequest) returns (ActionResponse) {}
   rpc GetUserPrivateMessages(GetUserPrivateMessagesRequest) returns (GetMessagesResponse)  {}
 }
@@ -36,4 +37,13 @@ message Message {
   google.protobuf.Timestamp timestamp = 3;
   string chat_id = 4;
   string owner_id = 5;
+}
+
+message CreatePrivateChatRequest {
+  string userId = 1;
+}
+
+message CreatePrivateChatResponse {
+  bool success = 1;
+  string chatId = 2;
 }

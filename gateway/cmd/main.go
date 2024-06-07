@@ -133,7 +133,7 @@ func main() {
 
 	// grpc connection to auth service
 	authConn, err := grpc.DialContext(resourcesShutdownCtx,
-		"auth:8080", grpc.WithIdleTimeout(15*time.Second),
+		"localhost:8180", grpc.WithIdleTimeout(15*time.Second), // todo return
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
 			srvCfg.UnaryClientInterceptors...,
@@ -157,7 +157,7 @@ func main() {
 
 	// grpc connection to server service
 	serverConn, err := grpc.DialContext(resourcesShutdownCtx,
-		"server:8080",
+		"localhost:8480", // todo return
 		grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
@@ -182,7 +182,7 @@ func main() {
 
 	// grpc connection to chat service
 	chatConn, err := grpc.DialContext(resourcesShutdownCtx,
-		"chat:8080",
+		"localhost:8580", // todo return
 		grpc.WithIdleTimeout(15*time.Second),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(

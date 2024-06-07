@@ -461,6 +461,63 @@
         ]
       }
     },
+    "/api/v1/chat/private/{user_id}/create": {
+      "post": {
+        "summary": "Отправить сообщение пользователю",
+        "operationId": "GatewayService_CreatePrivateChat",
+        "responses": {
+          "200": {
+            "description": "User private chat created successfully",
+            "schema": {
+              "$ref": "#/definitions/v1CreatePrivateChatResponse"
+            }
+          },
+          "400": {
+            "description": "Send message validate error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "403": {
+            "description": "Forrbidden",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "schema": {
+              "$ref": "#/definitions/v1ErrorMessage"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GatewayServiceCreatePrivateChatBody"
+            }
+          }
+        ],
+        "tags": [
+          "chat"
+        ]
+      }
+    },
     "/api/v1/friends": {
       "get": {
         "summary": "Получить список друзей пользователя",
@@ -1357,6 +1414,9 @@
     }
   },
   "definitions": {
+    "GatewayServiceCreatePrivateChatBody": {
+      "type": "object"
+    },
     "GatewayServicePublishMessageOnServerBody": {
       "type": "object",
       "properties": {
@@ -1428,6 +1488,17 @@
       "required": [
         "name"
       ]
+    },
+    "v1CreatePrivateChatResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "chat_id": {
+          "type": "string"
+        }
+      }
     },
     "v1CreateServerResponse": {
       "type": "object",

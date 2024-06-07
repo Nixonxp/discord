@@ -19,16 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	ChatService_CreatePrivateChat_FullMethodName      = "/github.com.Nixonxp.discord.chat.api.v1.ChatService/CreatePrivateChat"
 	ChatService_SendUserPrivateMessage_FullMethodName = "/github.com.Nixonxp.discord.chat.api.v1.ChatService/SendUserPrivateMessage"
 	ChatService_GetUserPrivateMessages_FullMethodName = "/github.com.Nixonxp.discord.chat.api.v1.ChatService/GetUserPrivateMessages"
+	ChatService_SendServerMessage_FullMethodName      = "/github.com.Nixonxp.discord.chat.api.v1.ChatService/SendServerMessage"
+	ChatService_GetServerMessages_FullMethodName      = "/github.com.Nixonxp.discord.chat.api.v1.ChatService/GetServerMessages"
 )
 
 // ChatServiceClient is the client API for ChatService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
+	CreatePrivateChat(ctx context.Context, in *CreatePrivateChatRequest, opts ...grpc.CallOption) (*CreatePrivateChatResponse, error)
 	SendUserPrivateMessage(ctx context.Context, in *SendUserPrivateMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	GetUserPrivateMessages(ctx context.Context, in *GetUserPrivateMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
+	SendServerMessage(ctx context.Context, in *SendServerMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error)
+	GetServerMessages(ctx context.Context, in *GetServerMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 }
 
 type chatServiceClient struct {
@@ -37,6 +43,15 @@ type chatServiceClient struct {
 
 func NewChatServiceClient(cc grpc.ClientConnInterface) ChatServiceClient {
 	return &chatServiceClient{cc}
+}
+
+func (c *chatServiceClient) CreatePrivateChat(ctx context.Context, in *CreatePrivateChatRequest, opts ...grpc.CallOption) (*CreatePrivateChatResponse, error) {
+	out := new(CreatePrivateChatResponse)
+	err := c.cc.Invoke(ctx, ChatService_CreatePrivateChat_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *chatServiceClient) SendUserPrivateMessage(ctx context.Context, in *SendUserPrivateMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
@@ -57,12 +72,33 @@ func (c *chatServiceClient) GetUserPrivateMessages(ctx context.Context, in *GetU
 	return out, nil
 }
 
+func (c *chatServiceClient) SendServerMessage(ctx context.Context, in *SendServerMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error) {
+	out := new(ActionResponse)
+	err := c.cc.Invoke(ctx, ChatService_SendServerMessage_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *chatServiceClient) GetServerMessages(ctx context.Context, in *GetServerMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
+	out := new(GetMessagesResponse)
+	err := c.cc.Invoke(ctx, ChatService_GetServerMessages_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
+	CreatePrivateChat(context.Context, *CreatePrivateChatRequest) (*CreatePrivateChatResponse, error)
 	SendUserPrivateMessage(context.Context, *SendUserPrivateMessageRequest) (*ActionResponse, error)
 	GetUserPrivateMessages(context.Context, *GetUserPrivateMessagesRequest) (*GetMessagesResponse, error)
+	SendServerMessage(context.Context, *SendServerMessageRequest) (*ActionResponse, error)
+	GetServerMessages(context.Context, *GetServerMessagesRequest) (*GetMessagesResponse, error)
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -70,11 +106,20 @@ type ChatServiceServer interface {
 type UnimplementedChatServiceServer struct {
 }
 
+func (UnimplementedChatServiceServer) CreatePrivateChat(context.Context, *CreatePrivateChatRequest) (*CreatePrivateChatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePrivateChat not implemented")
+}
 func (UnimplementedChatServiceServer) SendUserPrivateMessage(context.Context, *SendUserPrivateMessageRequest) (*ActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendUserPrivateMessage not implemented")
 }
 func (UnimplementedChatServiceServer) GetUserPrivateMessages(context.Context, *GetUserPrivateMessagesRequest) (*GetMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserPrivateMessages not implemented")
+}
+func (UnimplementedChatServiceServer) SendServerMessage(context.Context, *SendServerMessageRequest) (*ActionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendServerMessage not implemented")
+}
+func (UnimplementedChatServiceServer) GetServerMessages(context.Context, *GetServerMessagesRequest) (*GetMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetServerMessages not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -87,6 +132,24 @@ type UnsafeChatServiceServer interface {
 
 func RegisterChatServiceServer(s grpc.ServiceRegistrar, srv ChatServiceServer) {
 	s.RegisterService(&ChatService_ServiceDesc, srv)
+}
+
+func _ChatService_CreatePrivateChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePrivateChatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).CreatePrivateChat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_CreatePrivateChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).CreatePrivateChat(ctx, req.(*CreatePrivateChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ChatService_SendUserPrivateMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -125,6 +188,42 @@ func _ChatService_GetUserPrivateMessages_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_SendServerMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendServerMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).SendServerMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_SendServerMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).SendServerMessage(ctx, req.(*SendServerMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ChatService_GetServerMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServerMessagesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ChatServiceServer).GetServerMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ChatService_GetServerMessages_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ChatServiceServer).GetServerMessages(ctx, req.(*GetServerMessagesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -133,12 +232,24 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ChatServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "CreatePrivateChat",
+			Handler:    _ChatService_CreatePrivateChat_Handler,
+		},
+		{
 			MethodName: "SendUserPrivateMessage",
 			Handler:    _ChatService_SendUserPrivateMessage_Handler,
 		},
 		{
 			MethodName: "GetUserPrivateMessages",
 			Handler:    _ChatService_GetUserPrivateMessages_Handler,
+		},
+		{
+			MethodName: "SendServerMessage",
+			Handler:    _ChatService_SendServerMessage_Handler,
+		},
+		{
+			MethodName: "GetServerMessages",
+			Handler:    _ChatService_GetServerMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

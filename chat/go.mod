@@ -16,11 +16,12 @@ require (
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/prometheus/client_golang v1.19.1
 	github.com/rs/zerolog v1.33.0
+	github.com/segmentio/kafka-go v0.4.47
 	github.com/stretchr/testify v1.9.0
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	go.mongodb.org/mongo-driver v1.15.0
 	go.opentelemetry.io/otel/trace v1.27.0
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240506185236-b8a5c65736ae
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.34.1
@@ -36,14 +37,15 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/cel-go v0.20.1 // indirect
-	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
+	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect

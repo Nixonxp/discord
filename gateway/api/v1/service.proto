@@ -879,7 +879,7 @@ service GatewayService {
     };
   }
 
-  // Пригласить пользователя на сервер
+  // Опубликовать сообщение на сервере
   rpc PublishMessageOnServer(PublishMessageOnServerRequest) returns (ActionResponse) {
     option (google.api.http) = {
       post: "/api/v1/servers/{server_id}/messages/send"
@@ -1177,6 +1177,53 @@ service GatewayService {
           description: "User message sent successfully"
           schema: {
             json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ActionResponse"}
+          }
+        }
+      }
+      responses: {
+        key: "400";
+        value: {
+          description: "Send message validate error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "403";
+        value: {
+          description: "Forrbidden";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+      responses: {
+        key: "500";
+        value: {
+          description: "Internal server error";
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.ErrorMessage"}
+          }
+        }
+      }
+    };
+  }
+
+  // Создать новый чат с пользователем
+  rpc CreatePrivateChat(CreatePrivateChatRequest) returns (CreatePrivateChatResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/chat/private/{user_id}/create"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: "chat";
+      responses: {
+        key: "200"
+        value: {
+          description: "User private chat created successfully"
+          schema: {
+            json_schema: {ref: ".github.com.Nixonxp.discord.gateway.api.v1.CreatePrivateChatResponse"}
           }
         }
       }

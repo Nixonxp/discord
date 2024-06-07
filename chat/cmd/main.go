@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
-	repository "github.com/Nixonxp/discord/chat/internal/app/repository/chat_storage"
+	"github.com/Nixonxp/discord/chat/internal/app/queue"
+	chat_repository "github.com/Nixonxp/discord/chat/internal/app/repository/chat_storage"
+	repository "github.com/Nixonxp/discord/chat/internal/app/repository/messages_storage"
 	"github.com/Nixonxp/discord/chat/internal/app/server"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/chat/internal/middleware/errors"
@@ -19,6 +21,7 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
+	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"os/signal"
 	"syscall"
@@ -26,6 +29,7 @@ import (
 )
 
 const MongoCollectionMessages = "messages"
+const MongoCollectionChat = "chat"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(),
@@ -38,9 +42,9 @@ func main() {
 	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
-		GRPCPort:  ":8080",
-		HTTPPort:  ":8081",
-		DebugPort: ":8084",
+		GRPCPort: ":8580", // todo return
+		//HTTPPort:  ":8081",
+		//DebugPort: ":8084",
 	}
 
 	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
@@ -54,6 +58,18 @@ func main() {
 	}
 	defer closer(resourcesShutdownCtx)
 
+	/// KAFKA
+	conn, err := kafka.DialLeader(ctx, "tcp", "localhost:9092", "messages", 0)
+	if err != nil {
+		log.Fatal("failed to dial leader:", err)
+	}
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Fatal("failed to close writer:", err)
+		}
+	}()
+
 	app, err := application.NewApp(&config)
 	if err != nil {
 		log.Fatalf("failed to create app: %v", err)
@@ -62,11 +78,11 @@ func main() {
 	collection, err := mongoCollection.NewCollection(resourcesShutdownCtx,
 		MongoCollectionMessages,
 		&mongoCollection.Config{
-			MongoHost:     "mongodb",
-			MongoDb:       "Chat",
-			MongoPort:     "27017",
-			MongoUser:     "root",
-			MongoPassword: "example",
+			MongoHost:     "localhost", // todo return
+			MongoDb:       "discord",
+			MongoPort:     "27117", // todo return
+			MongoUser:     "discord",
+			MongoPassword: "example", // todo env
 		},
 	)
 	if err != nil {
@@ -75,10 +91,28 @@ func main() {
 
 	defer collection.DisconnectClient()
 
-	chatMongoRepo := repository.NewMongoChatRepository(collection)
+	messagesMongoRepo := repository.NewMongoMessagesRepository(collection)
+
+	chatCollection, err := collection.NewCollection(MongoCollectionChat)
+	if err != nil {
+		log.Fatalf("failed to connect mongo: %v", err)
+	}
+
+	chatMongoRepo := chat_repository.NewMongoChatRepository(chatCollection)
 	chatUsecase := usecases.NewChatUsecase(usecases.Deps{
-		ChatRepo: chatMongoRepo,
+		MessagesRepo: messagesMongoRepo,
+		ChatRepo:     chatMongoRepo,
+		KafkaConn:    conn,
 	})
+
+	queueUsecase := usecases.NewQueueUsecase(messagesMongoRepo)
+	queueHandler := queue.NewQueue(queue.Deps{QueueUsecase: queueUsecase})
+	go func() {
+		err := queueHandler.Run(ctx)
+		if err != nil {
+			return
+		}
+	}()
 
 	srv, err := server.NewChatServer(resourcesShutdownCtx, server.Deps{
 		ChatUsecase: chatUsecase,
@@ -87,7 +121,7 @@ func main() {
 		log.Fatalf("failed to create server: %v", err)
 	}
 
-	globalLimiter := rate_limiter.NewRateLimiter(1000)
+	globalLimiter := rate_limiter.NewRateLimiter(10000)
 	grpcConfig := server.Config{
 		ChainUnaryInterceptors: []grpc.UnaryServerInterceptor{
 			ratelimit.UnaryServerInterceptor(globalLimiter),

@@ -27,3 +27,8 @@ type SubscribeStorage interface {
 	DeleteSubscribe(ctx context.Context, serverId models.ServerID, userId models.UserID) error
 	GetByUserId(ctx context.Context, userId models.UserID) ([]*models.SubscribeInfo, error)
 }
+
+type UsecaseChatInterface interface {
+	SendServerMessage(ctx context.Context, msg PublishMessageOnServerRequest) (*models.ActionInfo, error)
+	GetServerMessages(ctx context.Context, msg GetMessagesFromServerRequest) (*models.GetMessagesInfo, error)
+}

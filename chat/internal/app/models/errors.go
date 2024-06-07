@@ -7,4 +7,5 @@ var (
 	ErrUnimplemented = errors.New("unimplemented")
 	ErrCreate        = errors.New("error create")
 	ErrEmpty         = errors.New("error empty")
+	ErrNotFound      = errors.New("not found")
 )

@@ -5,6 +5,7 @@ import (
 	"github.com/Nixonxp/discord/server/internal/app/repository/server_storage"
 	subscribe_storage "github.com/Nixonxp/discord/server/internal/app/repository/subscribe_storage"
 	"github.com/Nixonxp/discord/server/internal/app/server"
+	"github.com/Nixonxp/discord/server/internal/app/services/chat"
 	"github.com/Nixonxp/discord/server/internal/app/usecases"
 	middleware "github.com/Nixonxp/discord/server/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/server/internal/middleware/metrics"
@@ -18,10 +19,12 @@ import (
 	jaeger_tracing "github.com/Nixonxp/discord/server/pkg/tracing"
 	"github.com/grpc-ecosystem/go-grpc-middleware/ratelimit"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
+	ratelimitCustom "github.com/tommy-sho/rate-limiter-grpc-go"
 	"google.golang.org/grpc"
-	"os"
+	"google.golang.org/grpc/codes"
 	"os/signal"
 	"syscall"
 	"time"
@@ -38,9 +41,9 @@ func main() {
 	defer resourcesShutdownCtxCancel()
 
 	config := application.Config{
-		GRPCPort:  ":8080",
-		HTTPPort:  ":8081",
-		DebugPort: ":8084",
+		GRPCPort: ":8480", // todo :8080
+		//HTTPPort:  ":8081",
+		//DebugPort: ":8084",
 	}
 
 	log, err := logger.NewLogger(logCfg.NewDefaultConfig())
@@ -54,6 +57,26 @@ func main() {
 	}
 	defer closer(resourcesShutdownCtx)
 
+	retryOpts := []grpcretry.CallOption{
+		grpcretry.WithCodes(codes.Canceled, codes.Aborted, codes.DeadlineExceeded),
+		grpcretry.WithMax(uint(3)),
+		grpcretry.WithPerRetryTimeout(time.Second * 15),
+	}
+
+	serverConfig := server.Config{
+		ChatServiceUrl: "localhost:8580", // todo chat:8080
+		UnaryClientInterceptors: []grpc.UnaryClientInterceptor{
+			grpcretry.UnaryClientInterceptor(retryOpts...),
+			ratelimitCustom.UnaryClientInterceptor(ratelimitCustom.NewLimiter(10001)),
+			grpc_opentracing.OpenTracingClientInterceptor(opentracing.GlobalTracer(), grpc_opentracing.LogPayloads()),
+		},
+	}
+
+	chatServiceClient, err := chat.NewClient(serverConfig, log)
+	if err != nil {
+		log.Fatalf("failed to create app: %v", err)
+	}
+
 	app, err := application.NewApp(&config)
 	if err != nil {
 		log.Fatalf("failed to create app: %v", err)
@@ -62,17 +85,17 @@ func main() {
 	collection, err := mongoCollection.NewCollection(resourcesShutdownCtx,
 		"servers",
 		&mongoCollection.Config{
-			MongoHost:     os.Getenv("MONGO_HOST"),
+			/*MongoHost:     os.Getenv("MONGO_HOST"),
 			MongoDb:       os.Getenv("MONGO_DB"),
 			MongoPort:     os.Getenv("MONGO_PORT"),
 			MongoUser:     os.Getenv("MONGO_USER"),
-			MongoPassword: os.Getenv("MONGO_PASSWORD"),
+			MongoPassword: os.Getenv("MONGO_PASSWORD"),*/
 
-			/*MongoHost:     "localhost",
+			MongoHost:     "localhost",
 			MongoDb:       "discord",
 			MongoPort:     "27117",
 			MongoUser:     "discord",
-			MongoPassword: "example",*/
+			MongoPassword: "example",
 			// todo local vars delete
 		},
 	)
@@ -92,6 +115,7 @@ func main() {
 	serverUsecase := usecases.NewServerUsecase(usecases.Deps{
 		ServerRepo:    serverMongoRepo,
 		SubscribeRepo: subscribeMongoRepo,
+		ChatService:   chatServiceClient,
 		Log:           log,
 	})
 

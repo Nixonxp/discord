@@ -85,7 +85,22 @@ services:
       context: ./chat
       dockerfile: ./build/Dockerfile
 
-#todo
+  mongodb:
+    image: mongo:7.0.5
+    restart: unless-stopped
+    #env_file: ./chat/.env
+    volumes:
+      - mongo-volume:/data/db1
+    ports:
+      - 27117:27017
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - MONGO_INITDB_ROOT_USERNAME=discord
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_DATABASE=discord
+    networks:
+      - mongodb
 
   postgres:
     container_name: postgres_discord
@@ -140,6 +155,28 @@ services:
     networks:
       - prometheus
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+    networks:
+      - kafka-network
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    networks:
+      - kafka-network
+    ports:
+      - "9092:9092"
+
 volumes:
   postgres:
   mongo-volume:
@@ -160,4 +197,6 @@ networks:
   prometheus:
     driver: bridge
   gateway:
+    driver: bridge
+  kafka-network:
     driver: bridge

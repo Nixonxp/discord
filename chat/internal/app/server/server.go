@@ -51,6 +51,9 @@ func NewChatServer(ctx context.Context, d Deps) (*ChatServer, error) {
 			protovalidate.WithMessages(
 				&pb.SendUserPrivateMessageRequest{},
 				&pb.GetUserPrivateMessagesRequest{},
+				&pb.CreatePrivateChatRequest{},
+				&pb.SendServerMessageRequest{},
+				&pb.GetServerMessagesRequest{},
 			),
 		)
 		if err != nil {
