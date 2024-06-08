@@ -8,11 +8,13 @@ require (
 	github.com/bufbuild/protovalidate-go v0.6.2
 	github.com/cenkalti/backoff/v3 v3.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/fatih/structs v1.1.0
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/grpc-ecosystem/grpc-opentracing v0.0.0-20180507213350-8e809c8a8645
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/mercari/go-circuitbreaker v0.0.2
 	github.com/opentracing/opentracing-go v1.2.0
@@ -27,6 +29,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240429193739-8cf5692501f6
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.34.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

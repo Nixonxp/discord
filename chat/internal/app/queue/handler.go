@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
 	"github.com/segmentio/kafka-go"
 	"log"
@@ -49,12 +48,6 @@ func (q *Queue) Run(ctx context.Context) error {
 				break
 			}
 		}
-		fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		/*err = q.KafkaReader.CommitMessages(ctx, m)
-		if err != nil {
-			err = fmt.Errorf("failed to commit messages:", err)
-			break
-		}*/
 	}
 
 	if err != nil {
@@ -87,8 +80,6 @@ func (q *Queue) CreateMessage(ctx context.Context, message kafka.Message) error 
 	if err != nil {
 		return err
 	}
-
-	log.Println("get message - " + msgDto.Text)
 
 	_, err = q.QueueUsecase.CreateMessage(ctx, usecases.MessageDto{
 		Id:      msgDto.Id,

@@ -31,9 +31,6 @@ func NewChatUsecase(d Deps) UsecaseInterface {
 	}
 }
 
-// мок, в будущем будет браться из таблицы
-const chatIdStringMock = "3d0222e1-4b58-4fa7-a38c-171ee345b14e"
-
 func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
 	dataSlice := []string{req.CurrentUser, req.UserId}
 	sort.StringsAreSorted(dataSlice)

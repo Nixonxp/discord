@@ -15,8 +15,6 @@ import (
 )
 
 type Deps struct {
-	// deprecated
-	UserRepo    UsersStorage
 	UserService UsecaseServiceInterface
 	Log         *log.Logger
 	Oauth2Cgf   oauth2.Config

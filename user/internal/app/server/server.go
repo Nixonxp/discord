@@ -2,81 +2,73 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"github.com/Nixonxp/discord/user/internal/app/usecases"
-	pb "github.com/Nixonxp/discord/user/pkg/api/v1"
-	log "github.com/Nixonxp/discord/user/pkg/logger"
-	"github.com/bufbuild/protovalidate-go"
-	"github.com/labstack/echo/v4"
-	"google.golang.org/grpc"
-	"net"
+	config "github.com/Nixonxp/discord/user/configs"
+	"github.com/Nixonxp/discord/user/internal/app/services"
+	"github.com/Nixonxp/discord/user/pkg/servers"
+	"sync"
+	"time"
 )
 
-// Config - server config
-type Config struct {
-	ChainUnaryInterceptors []grpc.UnaryServerInterceptor
-	UnaryInterceptors      []grpc.UnaryServerInterceptor
+type Server interface {
+	// Start starts server in separate goroutine, method is non-blocking.
+	Start() error
+	// Stop stops currently running server and blocks until server is stopped.
+	Stop(ctx context.Context) error
 }
 
-// Deps - server deps
-type Deps struct {
-	UserUsecase usecases.UsecaseInterface
-	Log         *log.Logger
+var terminationTimeout = time.Second * 10
+
+type MainServer struct {
+	tracer   services.Tracing
+	logger   services.Logger
+	postgres services.Postgres
+	servers  []Server
+	cfg      *config.Config
 }
 
-type UserServer struct {
-	pb.UnimplementedUserServiceServer
-	Deps
-
-	validator *protovalidate.Validator
-
-	grpc struct {
-		lis    net.Listener
-		server *grpc.Server
-	}
-
-	http struct {
-		lis  *echo.Echo
-		port string
-	}
+func (s *MainServer) AddServer(srv Server) {
+	s.servers = append(s.servers, srv)
 }
 
-func NewUserServer(ctx context.Context, d Deps) (*UserServer, error) {
-	srv := &UserServer{
-		Deps: d,
+func (s *MainServer) AppStart(ctx context.Context, cfg *config.Config) error {
+	s.cfg = cfg
+
+	srv, err := NewUserServer(ctx, s)
+	if err != nil {
+		s.logger.GetInstance().Fatalf("failed to create server: %v", err)
 	}
 
-	// validator
-	{
-		validator, err := protovalidate.New(
-			protovalidate.WithDisableLazy(true),
-			protovalidate.WithMessages(
-				&pb.CreateUserRequest{},
-				&pb.GetUserForLoginRequest{},
-				&pb.UpdateUserRequest{},
-				&pb.GetUserByLoginRequest{},
-				&pb.GetUserFriendsRequest{},
-				&pb.AddToFriendByUserIdRequest{},
-				&pb.AcceptFriendInviteRequest{},
-				&pb.DeclineFriendInviteRequest{},
-				&pb.GetUserInvitesRequest{},
-				&pb.DeleteFromFriendRequest{},
-				&pb.CreateOrGetUserRequest{},
-			),
-		)
-		if err != nil {
-			return nil, fmt.Errorf("server: failed to initialize validator: %w", err)
+	server := servers.NewGrpc(srv.grpcServer, s.cfg.Application.Port)
+	s.AddServer(server)
+
+	metrics := servers.NewMetrics(cfg.Application.MetricsPort)
+	s.AddServer(metrics)
+
+	// start servers
+	for _, srvItem := range s.servers {
+		if err := srvItem.Start(); err != nil {
+			s.logger.GetInstance().Info("failed to start app server")
+			return err
 		}
-		srv.validator = validator
 	}
 
-	return srv, nil
-}
+	// listen for context cancel
+	<-ctx.Done()
 
-func UnaryInterceptorsToGrpcServerOptions(interceptors ...grpc.UnaryServerInterceptor) []grpc.ServerOption {
-	opts := make([]grpc.ServerOption, 0, len(interceptors))
-	for _, interceptor := range interceptors {
-		opts = append(opts, grpc.UnaryInterceptor(interceptor))
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), terminationTimeout)
+	defer cancel()
+	// stop servers in parallel
+	wg := new(sync.WaitGroup)
+	for _, srvItem := range s.servers {
+		wg.Add(1)
+		go func(srvItem Server) {
+			defer wg.Done()
+			if err := srvItem.Stop(shutdownCtx); err != nil {
+				s.logger.GetInstance().WithError(err).Info("failed to stop app server")
+			}
+		}(srvItem)
 	}
-	return opts
+	wg.Wait()
+
+	return nil
 }

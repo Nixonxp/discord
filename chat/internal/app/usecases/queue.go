@@ -21,7 +21,7 @@ func (u *QueueUsecase) CreateMessage(ctx context.Context, message MessageDto) (*
 	err := u.chatRepo.CreateMessage(ctx, &models.Message{
 		Id:        models.MessageID(uuid.MustParse(message.Id)),
 		ChatId:    models.ChatID(uuid.MustParse(message.ChatId)),
-		OwnerId:   models.OwnerID(uuid.MustParse(message.ChatId)),
+		OwnerId:   models.OwnerID(uuid.MustParse(message.OwnerId)),
 		Text:      message.Text,
 		Timestamp: time.Now(),
 	})

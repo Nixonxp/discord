@@ -9,16 +9,27 @@ services:
       JAEGER_HOST: "jaeger:6831"
       JAEGER_AGENT_HOST: jaeger
       JAEGER_AGENT_PORT: 6831
+      APP_PORT: ":8080"
+      SWAGGER_PORT: ":8081"
+      METRICS_PORT: ":8082"
+      AUTH_SERVICE_PORT: "auth:8080"
+      USER_SERVICE_PORT: "user:8080"
+      SERVER_SERVICE_PORT: "server:8080"
+      CHANNEL_SERVICE_PORT: "channel:8080"
+      CHAT_SERVICE_PORT: "chat:8080"
+      AUTH_SECRET_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" # in prod to secret
     ports:
       - "8800:8080"
       - "8801:8081"
       - "8804:8084"
       - "8084:8084"
-      - "8443:8443"
     networks:
       - tracing
       - user
       - auth
+      - server
+      - channel
+      - chat
       - prometheus
 
   auth:
@@ -29,6 +40,13 @@ services:
       JAEGER_HOST: "jaeger:6831"
       JAEGER_AGENT_HOST: jaeger
       JAEGER_AGENT_PORT: 6831
+      APP_PORT: ":8080"
+      METRICS_PORT: ":8082"
+      USER_SERVICE_PORT: "user:8080"
+      AUTH_SECRET_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" # in prod to secret
+      OAUTH_CLIENT_ID: "{key}" # in prod to secret
+      OAUTH_CLIENT_SECRET: "{secret}" # in prod to secret
+      OAUTH_REDIRECT_URL: "{url}" # in prod to secret
     networks:
       - tracing
       - user
@@ -42,12 +60,13 @@ services:
       JAEGER_HOST: "jaeger:6831"
       JAEGER_AGENT_HOST: jaeger
       JAEGER_AGENT_PORT: 6831
+      APP_PORT: ":8080"
+      POSTGRES_DSN: "user=admin password=password123 host=postgres port=5432 dbname=discord sslmode=require pool_max_conns=10"
     depends_on:
       - postgres
     networks:
       - tracing
       - postgresql
-      - user
       - prometheus
 
   server:
@@ -55,11 +74,16 @@ services:
       context: ./server
       dockerfile: ./build/Dockerfile
     environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
       MONGO_DB: "discord"
       MONGO_HOST: "mongodb"
       MONGO_PORT: 27017
       MONGO_USER: "discord"
       MONGO_PASSWORD: "example"
+      APP_PORT: ":8080"
+      CHAT_SERVICE_PORT: "chat:8080"
     networks:
       - mongodb
       - tracing
@@ -70,11 +94,15 @@ services:
       context: ./channel
       dockerfile: ./build/Dockerfile
     environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
       MONGO_DB: "discord"
       MONGO_HOST: "mongodb"
       MONGO_PORT: 27017
       MONGO_USER: "discord"
       MONGO_PASSWORD: "example"
+      APP_PORT: ":8080"
     networks:
       - mongodb
       - tracing
@@ -84,6 +112,22 @@ services:
     build:
       context: ./chat
       dockerfile: ./build/Dockerfile
+    environment:
+      JAEGER_HOST: "jaeger:6831"
+      JAEGER_AGENT_HOST: jaeger
+      JAEGER_AGENT_PORT: 6831
+      MONGO_DB: "discord"
+      MONGO_HOST: "mongodb"
+      MONGO_PORT: 27017
+      MONGO_USER: "discord"
+      MONGO_PASSWORD: "example"
+      APP_PORT: ":8080"
+      KAFKA_ADDRESS: "kafka:9092"
+    networks:
+      - mongodb
+      - tracing
+      - prometheus
+      - kafka-network
 
   mongodb:
     image: mongo:7.0.5
