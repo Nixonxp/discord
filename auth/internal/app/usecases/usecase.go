@@ -13,14 +13,15 @@ type UsecaseInterface interface {
 	OauthLoginCallback(ctx context.Context, req OauthLoginCallbackRequest) (*models.LoginResult, error)
 }
 
-type UsecaseServiceInterface interface {
+//go:generate mockery --name=UserServiceInterface --filename=users_service_mock.go --disable-version-string
+type UserServiceInterface interface {
 	Register(ctx context.Context, registerInfo RegisterUserInfo) (*models.User, error)
 	GetUserForLogin(ctx context.Context, loginInfo LoginUserInfo) (*models.User, error)
 	CreateOrCreateUser(ctx context.Context, userInfo GetOrCreateUserRequest) (*models.User, error)
 }
 
-//go:generate mockery --name=UsersStorage --filename=users_storage_mock.go --disable-version-string
-type UsersStorage interface {
-	CreateUser(ctx context.Context, user *models.User) (*models.User, error)
-	LoginUser(ctx context.Context, loginInfo *models.Login) (*models.User, error)
+//go:generate mockery --name=OAuthServiceInterface --filename=oauth_service_mock.go --disable-version-string
+type OAuthServiceInterface interface {
+	AuthCodeURL(state string) string
+	ExchangeClient(ctx context.Context, code string) (*UserInfo, error)
 }

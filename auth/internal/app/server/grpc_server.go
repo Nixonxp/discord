@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
+	oauth_svc "github.com/Nixonxp/discord/auth/internal/app/services/oauth"
 	"github.com/Nixonxp/discord/auth/internal/app/usecases"
+	usecases_auth "github.com/Nixonxp/discord/auth/internal/app/usecases/auth"
 	middleware "github.com/Nixonxp/discord/auth/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/auth/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/auth/internal/middleware/tracing"
@@ -17,8 +19,6 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -54,7 +54,7 @@ type AuthServer struct {
 	}
 }
 
-func NewAuthServer(ctx context.Context, s *MainServer) (*AuthServer, error) {
+func NewAuthServer(_ context.Context, s *MainServer) (*AuthServer, error) {
 	srv := &AuthServer{}
 	// validator
 	{
@@ -94,18 +94,13 @@ func NewAuthServer(ctx context.Context, s *MainServer) (*AuthServer, error) {
 		},
 	}
 
-	oauthConfig := oauth2.Config{
-		ClientID:     s.cfg.Application.OAuthClientID,
-		ClientSecret: s.cfg.Application.OAuthClientSecret,
-		RedirectURL:  s.cfg.Application.OAuthRedirectUrl,
-		Scopes:       []string{"profile", "email"},
-		Endpoint:     google.Endpoint,
-	}
+	oauthSvc := oauth_svc.NewGoogleOAuth(s.cfg, s.logger.GetInstance())
 
-	authUsecase := usecases.NewAuthUsecase(usecases.Deps{
+	authUsecase := usecases_auth.NewAuthUsecase(usecases_auth.Deps{
 		UserService: s.userSvcClient.GetInstance(),
 		Log:         s.logger.GetInstance(),
-		Oauth2Cgf:   oauthConfig,
+		OauthSvc:    oauthSvc,
+		Cfg:         s.cfg,
 	})
 
 	grpcServerOptions := UnaryInterceptorsToGrpcServerOptions(grpcConfig.UnaryInterceptors...)

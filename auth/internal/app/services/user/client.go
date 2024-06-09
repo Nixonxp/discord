@@ -22,7 +22,7 @@ type UserClient struct {
 	log    *log.Logger
 }
 
-var _ usecases.UsecaseServiceInterface = (*UserClient)(nil)
+var _ usecases.UserServiceInterface = (*UserClient)(nil)
 
 func (s *UserClient) Init(ctx context.Context, cfg *config.Config) error {
 	retryOpts := []grpcretry.CallOption{

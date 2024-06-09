@@ -32,7 +32,6 @@ func ErrorsUnaryInterceptor() grpc.UnaryServerInterceptor {
 		case errors.Is(err, models.ErrCredInvalid):
 			err = status.Error(codes.Unauthenticated, err.Error())
 		case errors.Is(err, models.Unauthenticated):
-			//log.WithContext(ctx).WithError(err).Warn("error invalid credentials") todo add logger
 			err = status.Error(codes.Unauthenticated, err.Error())
 		default:
 			err = status.Error(codes.Internal, err.Error())
