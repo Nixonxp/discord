@@ -31,7 +31,7 @@ func (s *UserClient) Register(ctx context.Context, registerInfo usecases.Registe
 }
 
 func (s *UserClient) GetUserForLogin(ctx context.Context, loginInfo usecases.LoginUserInfo) (*models.User, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserByLogin")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "user_service.GetUserForLogin")
 	defer span.Finish()
 	response, err := s.client.GetUserForLogin(ctx, &user.GetUserForLoginRequest{
 		Login: loginInfo.Login,

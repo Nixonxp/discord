@@ -7,6 +7,8 @@ import (
 	repositoryUserFriends "github.com/Nixonxp/discord/user/internal/app/repository/user_friends_storage"
 	repository "github.com/Nixonxp/discord/user/internal/app/repository/user_storage"
 	"github.com/Nixonxp/discord/user/internal/app/usecases"
+	friend_usc "github.com/Nixonxp/discord/user/internal/app/usecases/friends"
+	user_usc "github.com/Nixonxp/discord/user/internal/app/usecases/users"
 	middleware "github.com/Nixonxp/discord/user/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/user/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/user/internal/middleware/tracing"
@@ -31,8 +33,9 @@ type Config struct {
 
 // Deps - server deps
 type Deps struct {
-	UserUsecase usecases.UsecaseInterface
-	Log         *log.Logger
+	UserUsecase    usecases.UserUsecaseInterface
+	FriendsUsecase usecases.FriendUsecaseInterface
+	Log            *log.Logger
 }
 
 type UserServer struct {
@@ -53,7 +56,7 @@ type UserServer struct {
 	}
 }
 
-func NewUserServer(ctx context.Context, s *MainServer) (*UserServer, error) {
+func NewUserServer(_ context.Context, s *MainServer) (*UserServer, error) {
 	srv := &UserServer{}
 
 	// validator
@@ -84,11 +87,18 @@ func NewUserServer(ctx context.Context, s *MainServer) (*UserServer, error) {
 	friendInvitesRepo := repositoryFriendInvte.NewFriendInvitesPostgresqlRepository(s.postgres.GetInstance(), s.logger.GetInstance())
 	friendsRepo := repositoryUserFriends.NewUserFriendsPostgresqlRepository(s.postgres.GetInstance(), s.logger.GetInstance())
 
-	userUsecase := usecases.NewUserUsecase(usecases.Deps{
+	userUsecase := user_usc.NewUserUsecase(user_usc.Deps{
+		UserRepo:           userRepo,
+		TransactionManager: s.postgres.GetInstance(),
+		Log:                s.logger.GetInstance(),
+	})
+
+	friendUsecase := friend_usc.NewFriendUsecase(friend_usc.Deps{
 		UserRepo:           userRepo,
 		FriendInvitesRepo:  friendInvitesRepo,
 		UserFriendsRepo:    friendsRepo,
 		TransactionManager: s.postgres.GetInstance(),
+		Log:                s.logger.GetInstance(),
 	})
 
 	globalLimiter := rate_limiter.NewRateLimiter(10000)
@@ -106,6 +116,7 @@ func NewUserServer(ctx context.Context, s *MainServer) (*UserServer, error) {
 	}
 
 	srv.UserUsecase = userUsecase
+	srv.FriendsUsecase = friendUsecase
 	srv.Log = s.logger.GetInstance()
 
 	grpcServerOptions := UnaryInterceptorsToGrpcServerOptions(grpcConfig.UnaryInterceptors...)
