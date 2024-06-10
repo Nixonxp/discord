@@ -1,17 +1,21 @@
 package usecases
 
 type AddChannelRequest struct {
-	Name string
+	Name          string
+	CurrentUserId string
 }
 
 type DeleteChannelRequest struct {
-	ChannelId string
+	ChannelId     string
+	CurrentUserId string
 }
 
 type JoinChannelRequest struct {
-	ChannelId string
+	ChannelId     string
+	CurrentUserId string
 }
 
 type LeaveChannelRequest struct {
-	ChannelId string
+	ChannelId     string
+	CurrentUserId string
 }

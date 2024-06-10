@@ -8,4 +8,6 @@ var (
 	ErrCreate        = errors.New("error create")
 	ErrEmpty         = errors.New("error empty")
 	ErrNotFound      = errors.New("not found")
+	Unauthenticated  = errors.New("unauthenticated")
+	PermissionDenied = errors.New("permission denied")
 )

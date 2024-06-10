@@ -3,13 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/Nixonxp/discord/server/internal/app/models"
 	repository "github.com/Nixonxp/discord/server/internal/app/repository/server_storage"
 	subscribe_storage "github.com/Nixonxp/discord/server/internal/app/repository/subscribe_storage"
 	"github.com/Nixonxp/discord/server/internal/app/usecases"
+	server_usc "github.com/Nixonxp/discord/server/internal/app/usecases/server"
 	middleware "github.com/Nixonxp/discord/server/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/server/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/server/internal/middleware/tracing"
 	pb "github.com/Nixonxp/discord/server/pkg/api/v1"
+	"github.com/Nixonxp/discord/server/pkg/auth"
 	grpcutils "github.com/Nixonxp/discord/server/pkg/grpc_utils"
 	log "github.com/Nixonxp/discord/server/pkg/logger"
 	"github.com/Nixonxp/discord/server/pkg/rate_limiter"
@@ -89,7 +92,7 @@ func NewServerServer(_ context.Context, s *MainServer) (*ServerServer, error) {
 	serverMongoRepo := repository.NewMongoServerRepository(s.mongo.GetInstance(), s.logger.GetInstance())
 	subscribeMongoRepo := subscribe_storage.NewMongoSubscribeRepository(subscribeCollection, s.logger.GetInstance())
 
-	serverUsecase := usecases.NewServerUsecase(usecases.Deps{
+	serverUsecase := server_usc.NewServerUsecase(server_usc.Deps{
 		ServerRepo:    serverMongoRepo,
 		SubscribeRepo: subscribeMongoRepo,
 		ChatService:   s.chatSvcClient.GetInstance(),
@@ -141,8 +144,14 @@ func (s *ServerServer) CreateServer(ctx context.Context, req *pb.CreateServerReq
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	created, err := s.ServerUsecase.CreateServer(ctx, usecases.CreateServerRequest{
-		Name: req.GetName(),
+		Name:          req.GetName(),
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -160,6 +169,11 @@ func (s *ServerServer) SearchServer(ctx context.Context, req *pb.SearchServerReq
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	_, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
 	}
 
 	result, err := s.ServerUsecase.SearchServer(ctx, usecases.SearchServerRequest{
@@ -189,8 +203,14 @@ func (s *ServerServer) SubscribeServer(ctx context.Context, req *pb.SubscribeSer
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ServerUsecase.SubscribeServer(ctx, usecases.SubscribeServerRequest{
-		ServerId: req.ServerId,
+		ServerId:      req.ServerId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -208,8 +228,14 @@ func (s *ServerServer) UnsubscribeServer(ctx context.Context, req *pb.Unsubscrib
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ServerUsecase.UnsubscribeServer(ctx, usecases.UnsubscribeServerRequest{
-		ServerId: req.ServerId,
+		ServerId:      req.ServerId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -225,6 +251,11 @@ func (s *ServerServer) SearchServerByUserId(ctx context.Context, req *pb.SearchS
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	_, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
 	}
 
 	result, err := s.ServerUsecase.SearchServerByUserId(ctx, usecases.SearchServerByUserIdRequest{
@@ -244,6 +275,11 @@ func (s *ServerServer) InviteUserToServer(ctx context.Context, req *pb.InviteUse
 
 	if err := s.validator.Validate(req); err != nil {
 		return nil, grpcutils.RPCValidationError(err)
+	}
+
+	_, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
 	}
 
 	result, err := s.ServerUsecase.InviteUserToServer(ctx, usecases.InviteUserToServerRequest{
@@ -266,9 +302,15 @@ func (s *ServerServer) PublishMessageOnServer(ctx context.Context, req *pb.Publi
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ServerUsecase.PublishMessageOnServer(ctx, usecases.PublishMessageOnServerRequest{
-		ServerId: req.ServerId,
-		Text:     req.Text,
+		ServerId:      req.ServerId,
+		Text:          req.Text,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -286,8 +328,14 @@ func (s *ServerServer) GetMessagesFromServer(ctx context.Context, req *pb.GetMes
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ServerUsecase.GetMessagesFromServer(ctx, usecases.GetMessagesFromServerRequest{
-		ServerId: req.ServerId,
+		ServerId:      req.ServerId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err

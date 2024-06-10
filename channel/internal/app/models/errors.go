@@ -7,4 +7,5 @@ var (
 	ErrUnimplemented = errors.New("unimplemented")
 	ErrNotFound      = errors.New("not found")
 	ErrPermDenied    = errors.New("permission denied")
+	Unauthenticated  = errors.New("unauthenticated")
 )

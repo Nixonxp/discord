@@ -5,8 +5,8 @@ import (
 	"github.com/Nixonxp/discord/chat/internal/app/models"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/chat/pkg/api/v1"
+	"github.com/Nixonxp/discord/chat/pkg/auth"
 	grpcutils "github.com/Nixonxp/discord/chat/pkg/grpc_utils"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 )
@@ -17,12 +17,15 @@ func (s *ChatServer) SendUserPrivateMessage(ctx context.Context, req *pb.SendUse
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	userID := models.UserID(uuid.MustParse("284fef68-7e3e-4d1d-96a0-8c96f7b3b795")) // todo from auth
+	userID, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
 
 	result, err := s.ChatUsecase.SendUserPrivateMessage(ctx, usecases.SendUserPrivateMessageRequest{
 		UserId:      req.GetUserId(),
 		Text:        req.GetText(),
-		CurrentUser: userID.String(),
+		CurrentUser: userID,
 	})
 	if err != nil {
 		return nil, err
@@ -40,11 +43,14 @@ func (s *ChatServer) GetUserPrivateMessages(ctx context.Context, req *pb.GetUser
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	userID := models.UserID(uuid.MustParse("284fef68-7e3e-4d1d-96a0-8c96f7b3b795")) // todo from auth
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
 
 	result, err := s.ChatUsecase.GetUserPrivateMessages(ctx, usecases.GetUserPrivateMessagesRequest{
 		UserId:      req.GetUserId(),
-		CurrentUser: userID.String(),
+		CurrentUser: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -74,11 +80,14 @@ func (s *ChatServer) CreatePrivateChat(ctx context.Context, req *pb.CreatePrivat
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
-	userID := models.UserID(uuid.MustParse("284fef68-7e3e-4d1d-96a0-8c96f7b3b795")) // todo from auth
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
 
 	result, err := s.ChatUsecase.CreatePrivateChat(ctx, usecases.CreatePrivateChatRequest{
 		UserId:      req.GetUserId(),
-		CurrentUser: userID.String(),
+		CurrentUser: userId,
 	})
 	if err != nil {
 		return nil, err

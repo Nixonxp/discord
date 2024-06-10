@@ -4,13 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	config "github.com/Nixonxp/discord/chat/configs"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
+	pkgerrors "github.com/Nixonxp/discord/chat/pkg/errors"
+	log "github.com/Nixonxp/discord/chat/pkg/logger"
 	"github.com/segmentio/kafka-go"
-	"log"
 )
 
 type Deps struct {
-	QueueUsecase usecases.QueueInterface
+	QueueUsecase    usecases.QueueInterface
+	Cfg             *config.Config
+	ConsumerService usecases.KafkaConsumerServiceInterface
+	Log             *log.Logger
 }
 
 type Queue struct {
@@ -19,29 +24,23 @@ type Queue struct {
 }
 
 func NewQueue(d Deps) *Queue {
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  []string{"localhost:9092"},
-		Topic:    "messages",
-		GroupID:  "group-1",
-		MaxBytes: 10e6, // 10MB
-	})
 	return &Queue{
-		KafkaReader: r,
-		Deps:        d,
+		Deps: d,
 	}
 }
 
 func (q *Queue) Run(ctx context.Context) error {
-	var err error
 	for {
-		m, err := q.KafkaReader.ReadMessage(ctx)
+		m, err := q.ConsumerService.ReadMessage(ctx)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				break
 			}
-			log.Printf("failed to read messages: %s", err)
+			q.Log.WithContext(ctx).WithError(err).Error("failed to read messages")
 			break
 		}
+
+		q.Log.WithContext(ctx).Info("get  message from kafka")
 		if m.Topic == "messages" {
 			err = q.CreateMessage(ctx, m)
 			if err != nil {
@@ -49,18 +48,6 @@ func (q *Queue) Run(ctx context.Context) error {
 			}
 		}
 	}
-
-	if err != nil {
-		return err
-	}
-
-	defer log.Println("consumer closed")
-
-	defer func() {
-		if err := q.KafkaReader.Close(); err != nil {
-			log.Fatalf("failed to close reader:", err)
-		}
-	}()
 
 	return nil
 }
@@ -75,10 +62,11 @@ func (q *Queue) ReadInMessage(message kafka.Message, in any) error {
 }
 
 func (q *Queue) CreateMessage(ctx context.Context, message kafka.Message) error {
+	q.Log.WithContext(ctx).Infof("get message from kafka topic - %s", q.Cfg.Application.KafkaMessagesTopic)
 	msgDto := MessageKafkaMessage{}
 	err := q.ReadInMessage(message, &msgDto)
 	if err != nil {
-		return err
+		return pkgerrors.Wrap("unmarshal message", err)
 	}
 
 	_, err = q.QueueUsecase.CreateMessage(ctx, usecases.MessageDto{
@@ -88,7 +76,7 @@ func (q *Queue) CreateMessage(ctx context.Context, message kafka.Message) error 
 		OwnerId: msgDto.OwnerId,
 	})
 	if err != nil {
-		return err
+		return pkgerrors.Wrap("fail create message", err)
 	}
 
 	return nil

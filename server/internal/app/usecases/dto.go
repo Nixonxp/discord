@@ -1,7 +1,8 @@
 package usecases
 
 type CreateServerRequest struct {
-	Name string
+	Name          string
+	CurrentUserId string
 }
 
 type SearchServerRequest struct {
@@ -9,11 +10,13 @@ type SearchServerRequest struct {
 }
 
 type SubscribeServerRequest struct {
-	ServerId string
+	ServerId      string
+	CurrentUserId string
 }
 
 type UnsubscribeServerRequest struct {
-	ServerId string
+	ServerId      string
+	CurrentUserId string
 }
 
 type SearchServerByUserIdRequest struct {
@@ -26,10 +29,12 @@ type InviteUserToServerRequest struct {
 }
 
 type PublishMessageOnServerRequest struct {
-	ServerId string
-	Text     string
+	ServerId      string
+	Text          string
+	CurrentUserId string
 }
 
 type GetMessagesFromServerRequest struct {
-	ServerId string
+	ServerId      string
+	CurrentUserId string
 }

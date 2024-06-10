@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"github.com/Nixonxp/discord/channel/internal/app/models"
 	"github.com/Nixonxp/discord/channel/internal/app/usecases"
 	pb "github.com/Nixonxp/discord/channel/pkg/api/v1"
+	"github.com/Nixonxp/discord/channel/pkg/auth"
 	grpcutils "github.com/Nixonxp/discord/channel/pkg/grpc_utils"
 )
 
@@ -14,8 +16,14 @@ func (s *ChannelServer) AddChannel(ctx context.Context, req *pb.AddChannelReques
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ChannelUsecase.AddChannel(ctx, usecases.AddChannelRequest{
-		Name: req.GetName(),
+		Name:          req.GetName(),
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -33,8 +41,14 @@ func (s *ChannelServer) DeleteChannel(ctx context.Context, req *pb.DeleteChannel
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ChannelUsecase.DeleteChannel(ctx, usecases.DeleteChannelRequest{
-		ChannelId: req.ChannelId,
+		ChannelId:     req.ChannelId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -52,8 +66,14 @@ func (s *ChannelServer) JoinChannel(ctx context.Context, req *pb.JoinChannelRequ
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ChannelUsecase.JoinChannel(ctx, usecases.JoinChannelRequest{
-		ChannelId: req.ChannelId,
+		ChannelId:     req.ChannelId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err
@@ -71,8 +91,14 @@ func (s *ChannelServer) LeaveChannel(ctx context.Context, req *pb.LeaveChannelRe
 		return nil, grpcutils.RPCValidationError(err)
 	}
 
+	userId, err := auth.GetUserIdFromContext(ctx)
+	if err != nil {
+		return nil, models.Unauthenticated
+	}
+
 	result, err := s.ChannelUsecase.LeaveChannel(ctx, usecases.LeaveChannelRequest{
-		ChannelId: req.ChannelId,
+		ChannelId:     req.ChannelId,
+		CurrentUserId: userId,
 	})
 	if err != nil {
 		return nil, err

@@ -1,54 +1,52 @@
-package usecases
+package chat
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Nixonxp/discord/chat/internal/app/enum"
 	"github.com/Nixonxp/discord/chat/internal/app/models"
+	"github.com/Nixonxp/discord/chat/internal/app/usecases"
+	pkgerrors "github.com/Nixonxp/discord/chat/pkg/errors"
 	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
 	"sort"
 	"strings"
 )
 
 type Deps struct {
-	MessagesRepo MessagesStorage
-	ChatRepo     ChatStorage
-	KafkaConn    *kafka.Conn
+	MessagesRepo usecases.MessagesStorage
+	ChatRepo     usecases.ChatStorage
+	KafkaConn    usecases.KafkaProducerServiceInterface
 }
 
 type ChatUsecase struct {
 	Deps
 }
 
-var _ UsecaseInterface = (*ChatUsecase)(nil)
+var _ usecases.UsecaseInterface = (*ChatUsecase)(nil)
 
-func NewChatUsecase(d Deps) UsecaseInterface {
+func NewChatUsecase(d Deps) usecases.UsecaseInterface {
 	return &ChatUsecase{
 		Deps: d,
 	}
 }
 
-func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
+func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req usecases.SendUserPrivateMessageRequest) (*models.ActionInfo, error) {
 	dataSlice := []string{req.CurrentUser, req.UserId}
 	sort.StringsAreSorted(dataSlice)
 
 	meta := strings.Join(dataSlice, "_")
 	existChat, err := u.ChatRepo.GetChatByMetadataAndType(ctx, meta, enum.PrivateChatType)
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("chat search error", err)
 	}
 
-	err = u.send(MessageDto{
-		Id:      uuid.New().String(),
+	err = u.KafkaConn.SendMessage(usecases.MessageDto{
 		ChatId:  existChat.Id.String(),
 		OwnerId: req.CurrentUser,
 		Text:    req.Text,
 	})
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("chat message send error", err)
 	}
 
 	return &models.ActionInfo{
@@ -56,24 +54,11 @@ func (u *ChatUsecase) SendUserPrivateMessage(ctx context.Context, req SendUserPr
 	}, nil
 }
 
-func (u *ChatUsecase) send(msgData MessageDto) error {
-	msgBytes, _ := json.Marshal(msgData)
-
-	_, err := u.KafkaConn.WriteMessages(
-		kafka.Message{Value: msgBytes},
-	)
-	if err != nil {
-		return fmt.Errorf("failed to send messages", err)
-	}
-
-	return nil
-}
-
-func (u *ChatUsecase) SendServerMessage(ctx context.Context, req SendServerMessageRequest) (*models.ActionInfo, error) {
+func (u *ChatUsecase) SendServerMessage(ctx context.Context, req usecases.SendServerMessageRequest) (*models.ActionInfo, error) {
 	currentChat, err := u.ChatRepo.GetChatByMetadataAndType(ctx, req.ServerId, enum.ServerChatType)
 	if err != nil {
 		if !errors.Is(models.ErrNotFound, err) {
-			return nil, err
+			return nil, pkgerrors.Wrap("chat search error", err)
 		}
 
 		chatId := models.ChatID(uuid.New())
@@ -85,19 +70,17 @@ func (u *ChatUsecase) SendServerMessage(ctx context.Context, req SendServerMessa
 		}
 		err := u.ChatRepo.CreateChat(ctx, currentChat)
 		if err != nil {
-			return nil, err
+			return nil, pkgerrors.Wrap("create new chat for server", err)
 		}
 	}
 
-	chatId := models.MessageID(uuid.New())
-	err = u.send(MessageDto{
-		Id:      chatId.String(),
+	err = u.KafkaConn.SendMessage(usecases.MessageDto{
 		ChatId:  currentChat.Id.String(),
 		OwnerId: req.ServerId,
 		Text:    req.Text,
 	})
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("send message to server server", err)
 	}
 
 	return &models.ActionInfo{
@@ -105,23 +88,23 @@ func (u *ChatUsecase) SendServerMessage(ctx context.Context, req SendServerMessa
 	}, nil
 }
 
-func (u *ChatUsecase) GetUserPrivateMessages(ctx context.Context, req GetUserPrivateMessagesRequest) (*models.Messages, error) {
+func (u *ChatUsecase) GetUserPrivateMessages(ctx context.Context, req usecases.GetUserPrivateMessagesRequest) (*models.Messages, error) {
 	dataSlice := []string{req.CurrentUser, req.UserId}
 	sort.StringsAreSorted(dataSlice)
 
 	meta := strings.Join(dataSlice, "_")
 	existChat, err := u.ChatRepo.GetChatByMetadataAndType(ctx, meta, enum.PrivateChatType)
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("get chat error", err)
 	}
 
 	messages, err := u.MessagesRepo.GetMessages(ctx, existChat.Id)
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("get messages error", err)
 	}
 
 	if len(messages) == 0 {
-		return nil, models.ErrEmpty
+		return nil, pkgerrors.Wrap("get messages error", models.ErrEmpty)
 	}
 
 	return &models.Messages{
@@ -129,19 +112,19 @@ func (u *ChatUsecase) GetUserPrivateMessages(ctx context.Context, req GetUserPri
 	}, nil
 }
 
-func (u *ChatUsecase) GetServerMessagesRequest(ctx context.Context, req GetServerMessageRequest) (*models.Messages, error) {
+func (u *ChatUsecase) GetServerMessagesRequest(ctx context.Context, req usecases.GetServerMessageRequest) (*models.Messages, error) {
 	existChat, err := u.ChatRepo.GetChatByMetadataAndType(ctx, req.ServerId, enum.ServerChatType)
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("get server chat error", err)
 	}
 
 	messages, err := u.MessagesRepo.GetMessages(ctx, existChat.Id)
 	if err != nil {
-		return nil, err
+		return nil, pkgerrors.Wrap("get server messages error", err)
 	}
 
 	if len(messages) == 0 {
-		return nil, models.ErrEmpty
+		return nil, pkgerrors.Wrap("get server messages error", models.ErrEmpty)
 	}
 
 	return &models.Messages{
@@ -149,7 +132,7 @@ func (u *ChatUsecase) GetServerMessagesRequest(ctx context.Context, req GetServe
 	}, nil
 }
 
-func (u *ChatUsecase) CreatePrivateChat(ctx context.Context, req CreatePrivateChatRequest) (*models.Chat, error) {
+func (u *ChatUsecase) CreatePrivateChat(ctx context.Context, req usecases.CreatePrivateChatRequest) (*models.Chat, error) {
 	dataSlice := []string{req.CurrentUser, req.UserId}
 	sort.StringsAreSorted(dataSlice)
 
@@ -157,7 +140,7 @@ func (u *ChatUsecase) CreatePrivateChat(ctx context.Context, req CreatePrivateCh
 	existChat, err := u.ChatRepo.GetChatByMetadataAndType(ctx, meta, enum.PrivateChatType)
 	if err != nil {
 		if !errors.Is(models.ErrNotFound, err) {
-			return nil, err
+			return nil, pkgerrors.Wrap("get chat error", models.ErrNotFound)
 		}
 
 		chatId := models.ChatID(uuid.New())
@@ -169,10 +152,10 @@ func (u *ChatUsecase) CreatePrivateChat(ctx context.Context, req CreatePrivateCh
 		}
 		err := u.ChatRepo.CreateChat(ctx, chat)
 		if err != nil {
-			return nil, err
+			return nil, pkgerrors.Wrap("crate chat error", err)
 		}
 
-		return chat, err
+		return chat, pkgerrors.Wrap("crate chat error", err)
 	}
 
 	return existChat, nil

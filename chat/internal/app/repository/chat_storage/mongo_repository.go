@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Nixonxp/discord/chat/internal/app/models"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
+	logger "github.com/Nixonxp/discord/chat/pkg/logger"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,15 +22,17 @@ type MongoCollectionInterface interface {
 
 type MongoChatRepository struct {
 	mongo MongoCollectionInterface
+	log   *logger.Logger
 }
 
 const notFoundErrorStr = "mongo: no documents in result"
 
 var _ usecases.ChatStorage = (*MongoChatRepository)(nil)
 
-func NewMongoChatRepository(mongo MongoCollectionInterface) *MongoChatRepository {
+func NewMongoChatRepository(mongo MongoCollectionInterface, log *logger.Logger) *MongoChatRepository {
 	return &MongoChatRepository{
 		mongo: mongo,
+		log:   log,
 	}
 }
 
@@ -50,6 +53,7 @@ func (r *MongoChatRepository) CreateChat(ctx context.Context, chat *models.Chat)
 	}, option)
 
 	if err != nil {
+		r.log.WithContext(ctx).WithError(err).WithField("Id", chat.Id).Error("create chat error")
 		return err
 	}
 
@@ -66,29 +70,12 @@ func (r *MongoChatRepository) GetChatById(ctx context.Context, chatId models.Cha
 			return nil, models.ErrNotFound
 		}
 
-		//r.log.WithContext(ctx).WithError(err).WithField("id", id).Error("decode channel struct error repo")
+		r.log.WithContext(ctx).WithError(err).WithField("chatId", chatId).Error("get chat error")
 		return nil, err
 	}
 
 	return chat, nil
 }
-
-/*func (r *MongoChatRepository) GetChatByOwnerIdAndType(ctx context.Context, ownerId models.OwnerID, chatType string) (*models.Chat, error) { // todo delete?
-	result := r.mongo.FindOne(context.Background(), bson.M{"owner_id": uuid.MustParse(ownerId.String()), "type": uuid.MustParse(chatType)})
-
-	chat := &models.Chat{}
-	err := result.Decode(chat)
-	if err != nil {
-		if err.Error() == notFoundErrorStr {
-			return nil, models.ErrNotFound
-		}
-
-		//r.log.WithContext(ctx).WithError(err).WithField("id", id).Error("decode channel struct error repo")
-		return nil, err
-	}
-
-	return chat, nil
-}*/
 
 func (r *MongoChatRepository) GetChatByMetadataAndType(ctx context.Context, metadata string, chatType string) (*models.Chat, error) {
 	result := r.mongo.FindOne(context.Background(), bson.M{"metadata": metadata, "type": chatType})
@@ -100,7 +87,7 @@ func (r *MongoChatRepository) GetChatByMetadataAndType(ctx context.Context, meta
 			return nil, models.ErrNotFound
 		}
 
-		//r.log.WithContext(ctx).WithError(err).WithField("id", id).Error("decode channel struct error repo")
+		r.log.WithContext(ctx).WithError(err).WithField("metadata", metadata).Error("get chat error")
 		return nil, err
 	}
 

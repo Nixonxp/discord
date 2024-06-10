@@ -7,6 +7,8 @@ import (
 	chat_repository "github.com/Nixonxp/discord/chat/internal/app/repository/chat_storage"
 	repository "github.com/Nixonxp/discord/chat/internal/app/repository/messages_storage"
 	"github.com/Nixonxp/discord/chat/internal/app/usecases"
+	chat_usc "github.com/Nixonxp/discord/chat/internal/app/usecases/chat"
+	queue_usc "github.com/Nixonxp/discord/chat/internal/app/usecases/queue"
 	middleware "github.com/Nixonxp/discord/chat/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/chat/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/chat/internal/middleware/tracing"
@@ -32,8 +34,6 @@ type Config struct {
 type Deps struct {
 	ChatUsecase usecases.UsecaseInterface
 }
-
-const MongoCollectionChat = "chat"
 
 type ChatServer struct {
 	pb.UnimplementedChatServiceServer
@@ -75,23 +75,28 @@ func NewChatServer(ctx context.Context, s *MainServer) (*ChatServer, error) {
 		srv.validator = validator
 	}
 
-	mainCollection := s.mongo.GetInstance()
-	messagesMongoRepo := repository.NewMongoMessagesRepository(mainCollection)
-
-	chatCollection, err := mainCollection.NewCollection(MongoCollectionChat)
+	chatCollection := s.mongo.GetInstance()
+	messagesCollection, err := chatCollection.NewCollection(s.cfg.Application.MessagesCollection)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect mongo: %v", err)
 	}
 
-	chatMongoRepo := chat_repository.NewMongoChatRepository(chatCollection)
-	chatUsecase := usecases.NewChatUsecase(usecases.Deps{
+	messagesMongoRepo := repository.NewMongoMessagesRepository(messagesCollection)
+
+	chatMongoRepo := chat_repository.NewMongoChatRepository(chatCollection, s.logger.GetInstance())
+	chatUsecase := chat_usc.NewChatUsecase(chat_usc.Deps{
 		MessagesRepo: messagesMongoRepo,
 		ChatRepo:     chatMongoRepo,
-		KafkaConn:    s.kafka.GetInstance(),
+		KafkaConn:    s.kafkaProducer.GetInstance(),
 	})
 
-	queueUsecase := usecases.NewQueueUsecase(messagesMongoRepo)
-	queueHandler := queue.NewQueue(queue.Deps{QueueUsecase: queueUsecase})
+	queueUsecase := queue_usc.NewQueueUsecase(messagesMongoRepo)
+	queueHandler := queue.NewQueue(queue.Deps{
+		QueueUsecase:    queueUsecase,
+		Cfg:             s.cfg,
+		ConsumerService: s.kafkaConsumer.GetInstance(),
+		Log:             s.logger.GetInstance(),
+	})
 	go func() {
 		err := queueHandler.Run(ctx)
 		if err != nil {

@@ -22,7 +22,7 @@ type ChatClient struct {
 	log    *log.Logger
 }
 
-var _ usecases.UsecaseChatInterface = (*ChatClient)(nil)
+var _ usecases.ServiceChatInterface = (*ChatClient)(nil)
 
 func (s *ChatClient) Init(ctx context.Context, cfg *config.Config) error {
 	retryOpts := []grpcretry.CallOption{

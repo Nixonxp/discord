@@ -4,6 +4,7 @@ import (
 	"context"
 	config "github.com/Nixonxp/discord/chat/configs"
 	"github.com/Nixonxp/discord/chat/internal/app/services"
+	kafka_svc "github.com/Nixonxp/discord/chat/internal/app/services/kafka"
 	"github.com/Nixonxp/discord/chat/pkg/servers"
 	"sync"
 	"time"
@@ -19,12 +20,13 @@ type Server interface {
 var terminationTimeout = time.Second * 10
 
 type MainServer struct {
-	tracer  services.Tracing
-	logger  services.Logger
-	mongo   services.Mongo
-	kafka   services.Kafka
-	servers []Server
-	cfg     *config.Config
+	tracer        services.Tracing
+	logger        services.Logger
+	mongo         services.Mongo
+	kafkaProducer kafka_svc.KafkaMessengerProducer
+	kafkaConsumer kafka_svc.KafkaMessengerConsumer
+	servers       []Server
+	cfg           *config.Config
 }
 
 func (s *MainServer) AddServer(srv Server) {

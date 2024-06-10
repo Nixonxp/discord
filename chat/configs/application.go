@@ -9,6 +9,7 @@ type ApplicationConfig struct {
 	MongoUser          string `envconfig:"MONGO_USER" default:"discord"`
 	MongoPassword      string `envconfig:"MONGO_PASSWORD" default:"example"`
 	ServiceCollection  string `envconfig:"MONGO_SERVICE_COLLECTION" default:"chat"`
+	MessagesCollection string `envconfig:"MONGO_SERVICE_COLLECTION" default:"messages"`
 	KafkaAddress       string `envconfig:"KAFKA_ADDRESS" default:"localhost:9092"`
 	KafkaMessagesTopic string `envconfig:"KAFKA_MESSAGES_TOPIC" default:"messages"`
 }

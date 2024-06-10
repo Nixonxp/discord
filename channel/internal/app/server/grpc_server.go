@@ -6,6 +6,7 @@ import (
 	repository "github.com/Nixonxp/discord/channel/internal/app/repository/channel_storage"
 	sub_repository "github.com/Nixonxp/discord/channel/internal/app/repository/subscribe_storage"
 	"github.com/Nixonxp/discord/channel/internal/app/usecases"
+	channel_usc "github.com/Nixonxp/discord/channel/internal/app/usecases/channel"
 	middleware "github.com/Nixonxp/discord/channel/internal/middleware/errors"
 	middleware_metrics "github.com/Nixonxp/discord/channel/internal/middleware/metrics"
 	middleware_tracing "github.com/Nixonxp/discord/channel/internal/middleware/tracing"
@@ -81,7 +82,7 @@ func NewChannelServer(ctx context.Context, s *MainServer) (*ChannelServer, error
 
 	channelRepo := repository.NewMongoChannelRepository(mainCollection, s.logger.GetInstance())
 	subscribeRepo := sub_repository.NewMongoSubscribeRepository(subscribeCollection, s.logger.GetInstance())
-	authUsecase := usecases.NewChannelUsecase(usecases.Deps{
+	authUsecase := channel_usc.NewChannelUsecase(channel_usc.Deps{
 		ChannelRepo:   channelRepo,
 		SubscribeRepo: subscribeRepo,
 	})
