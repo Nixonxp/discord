@@ -35,8 +35,8 @@ func NewApplication(cfg *config.Config) *Application {
 	var srv MainServer
 	var svc = Resources{
 		Services: []Service{
-			&srv.chatSvcClient,
 			&srv.tracer,
+			&srv.chatSvcClient,
 			&srv.logger,
 			&srv.mongo,
 		},

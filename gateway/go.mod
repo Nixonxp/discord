@@ -8,7 +8,6 @@ require (
 	github.com/bufbuild/protovalidate-go v0.6.2
 	github.com/cenkalti/backoff/v3 v3.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/fatih/structs v1.1.0
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
@@ -24,12 +23,10 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/urfave/negroni v1.0.0
 	go.opentelemetry.io/otel/trace v1.27.0
-	golang.org/x/sync v0.7.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240506185236-b8a5c65736ae
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240429193739-8cf5692501f6
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.34.1
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
