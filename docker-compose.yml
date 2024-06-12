@@ -133,7 +133,6 @@ services:
   mongodb:
     image: mongo:7.0.5
     restart: unless-stopped
-    #env_file: ./chat/.env
     volumes:
       - mongo-volume:/data/db1
     ports:
@@ -215,7 +214,7 @@ services:
       - zookeeper
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 #for local localhost:9092
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     networks:
       - kafka-network
@@ -236,6 +235,12 @@ networks:
   user:
     driver: bridge
   auth:
+    driver: bridge
+  server:
+    driver: bridge
+  channel:
+    driver: bridge
+  chat:
     driver: bridge
   mongodb:
     driver: bridge

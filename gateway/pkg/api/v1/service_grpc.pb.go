@@ -91,7 +91,7 @@ type GatewayServiceClient interface {
 	SearchServerByUserId(ctx context.Context, in *SearchServerByUserIdRequest, opts ...grpc.CallOption) (*SearchServerByUserIdResponse, error)
 	// Пригласить пользователя на сервер
 	InviteUserToServer(ctx context.Context, in *InviteUserToServerRequest, opts ...grpc.CallOption) (*ActionResponse, error)
-	// Пригласить пользователя на сервер
+	// Опубликовать сообщение на сервере
 	PublishMessageOnServer(ctx context.Context, in *PublishMessageOnServerRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Получить опубликованные сообщения сервера
 	GetMessagesFromServer(ctx context.Context, in *GetMessagesFromServerRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
@@ -105,7 +105,7 @@ type GatewayServiceClient interface {
 	LeaveChannel(ctx context.Context, in *LeaveChannelRequest, opts ...grpc.CallOption) (*ActionResponse, error)
 	// Отправить сообщение пользователю
 	SendUserPrivateMessage(ctx context.Context, in *SendUserPrivateMessageRequest, opts ...grpc.CallOption) (*ActionResponse, error)
-	// Отправить сообщение пользователю
+	// Создать новый чат с пользователем
 	CreatePrivateChat(ctx context.Context, in *CreatePrivateChatRequest, opts ...grpc.CallOption) (*CreatePrivateChatResponse, error)
 	// Получить сообщения с пользователем
 	GetUserPrivateMessages(ctx context.Context, in *GetUserPrivateMessagesRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
@@ -413,7 +413,7 @@ type GatewayServiceServer interface {
 	SearchServerByUserId(context.Context, *SearchServerByUserIdRequest) (*SearchServerByUserIdResponse, error)
 	// Пригласить пользователя на сервер
 	InviteUserToServer(context.Context, *InviteUserToServerRequest) (*ActionResponse, error)
-	// Пригласить пользователя на сервер
+	// Опубликовать сообщение на сервере
 	PublishMessageOnServer(context.Context, *PublishMessageOnServerRequest) (*ActionResponse, error)
 	// Получить опубликованные сообщения сервера
 	GetMessagesFromServer(context.Context, *GetMessagesFromServerRequest) (*GetMessagesResponse, error)
@@ -427,7 +427,7 @@ type GatewayServiceServer interface {
 	LeaveChannel(context.Context, *LeaveChannelRequest) (*ActionResponse, error)
 	// Отправить сообщение пользователю
 	SendUserPrivateMessage(context.Context, *SendUserPrivateMessageRequest) (*ActionResponse, error)
-	// Отправить сообщение пользователю
+	// Создать новый чат с пользователем
 	CreatePrivateChat(context.Context, *CreatePrivateChatRequest) (*CreatePrivateChatResponse, error)
 	// Получить сообщения с пользователем
 	GetUserPrivateMessages(context.Context, *GetUserPrivateMessagesRequest) (*GetMessagesResponse, error)

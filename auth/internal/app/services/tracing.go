@@ -12,7 +12,7 @@ type Tracing struct {
 
 func (t *Tracing) Init(_ context.Context, _ *config.Config) error {
 	var err error
-	closer, err := jaeger_tracing.Init("gateway service")
+	closer, err := jaeger_tracing.Init("auth service")
 	if err != nil {
 		return err
 	}
